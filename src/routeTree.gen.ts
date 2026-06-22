@@ -9,13 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SalesRouteImport } from './routes/sales'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as PaymentsRouteImport } from './routes/payments'
+import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CustomersIdRouteImport } from './routes/customers.$id'
 
+const SalesRoute = SalesRouteImport.update({
+  id: '/sales',
+  path: '/sales',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsRoute = PaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomersRoute = CustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -28,44 +53,121 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CustomersIdRoute = CustomersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CustomersRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/customers': typeof CustomersRouteWithChildren
+  '/payments': typeof PaymentsRoute
+  '/reports': typeof ReportsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sales': typeof SalesRoute
+  '/customers/$id': typeof CustomersIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/customers': typeof CustomersRouteWithChildren
+  '/payments': typeof PaymentsRoute
+  '/reports': typeof ReportsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sales': typeof SalesRoute
+  '/customers/$id': typeof CustomersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/customers': typeof CustomersRouteWithChildren
+  '/payments': typeof PaymentsRoute
+  '/reports': typeof ReportsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sales': typeof SalesRoute
+  '/customers/$id': typeof CustomersIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/reset-password'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/customers'
+    | '/payments'
+    | '/reports'
+    | '/reset-password'
+    | '/sales'
+    | '/customers/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/reset-password'
-  id: '__root__' | '/' | '/auth' | '/reset-password'
+  to:
+    | '/'
+    | '/auth'
+    | '/customers'
+    | '/payments'
+    | '/reports'
+    | '/reset-password'
+    | '/sales'
+    | '/customers/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/customers'
+    | '/payments'
+    | '/reports'
+    | '/reset-password'
+    | '/sales'
+    | '/customers/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CustomersRoute: typeof CustomersRouteWithChildren
+  PaymentsRoute: typeof PaymentsRoute
+  ReportsRoute: typeof ReportsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SalesRoute: typeof SalesRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sales': {
+      id: '/sales'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof SalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments': {
+      id: '/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof PaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customers': {
+      id: '/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof CustomersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -82,13 +184,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/customers/$id': {
+      id: '/customers/$id'
+      path: '/$id'
+      fullPath: '/customers/$id'
+      preLoaderRoute: typeof CustomersIdRouteImport
+      parentRoute: typeof CustomersRoute
+    }
   }
 }
+
+interface CustomersRouteChildren {
+  CustomersIdRoute: typeof CustomersIdRoute
+}
+
+const CustomersRouteChildren: CustomersRouteChildren = {
+  CustomersIdRoute: CustomersIdRoute,
+}
+
+const CustomersRouteWithChildren = CustomersRoute._addFileChildren(
+  CustomersRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CustomersRoute: CustomersRouteWithChildren,
+  PaymentsRoute: PaymentsRoute,
+  ReportsRoute: ReportsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SalesRoute: SalesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
