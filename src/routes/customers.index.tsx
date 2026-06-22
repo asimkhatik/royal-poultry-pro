@@ -3,7 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/lib/auth";
 import { CustomersPage } from "@/features/CustomersPage";
 
-export const Route = createFileRoute("/customers")({
+export const Route = createFileRoute("/customers/")({
   component: () => {
     const { loading, session, role } = useAuth();
     if (loading) return null;
