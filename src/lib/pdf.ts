@@ -4,6 +4,117 @@ import autoTable from "jspdf-autotable";
 type Customer = { name: string; phone?: string | null; address?: string | null };
 type Sale = { id: string; sale_date: string; weight_kg: number; rate_per_kg: number; total_amount: number };
 
+const NAVY: [number, number, number] = [30, 58, 138];
+const GOLD: [number, number, number] = [212, 175, 55];
+const INK: [number, number, number] = [20, 20, 30];
+const MUTED: [number, number, number] = [110, 116, 130];
+const SOFT: [number, number, number] = [245, 247, 252];
+
+const rs = (n: number) => `Rs. ${Number(n).toFixed(2)}`;
+
+/** Vector crown + "RB" badge, drawn at (x, y). Size in pt. */
+function drawLogo(doc: jsPDF, x: number, y: number, size = 44) {
+  // Gold rounded badge
+  doc.setFillColor(...GOLD);
+  doc.roundedRect(x, y, size, size, 8, 8, "F");
+
+  // Crown silhouette (5 points)
+  const cx = x + size / 2;
+  const cy = y + size * 0.42;
+  const w = size * 0.62;
+  const h = size * 0.28;
+  doc.setFillColor(...NAVY);
+  const left = cx - w / 2;
+  const right = cx + w / 2;
+  const top = cy - h;
+  // Crown polygon via lines
+  doc.lines(
+    [
+      [w * 0.18, h * 0.55],       // down-right to first valley
+      [w * 0.14, -h * 0.55],      // up to peak 2
+      [w * 0.18, h * 0.55],       // down to center valley
+      [w * 0.14, -h],             // up to center tall peak
+      [w * 0.14, h],              // down to next valley
+      [w * 0.18, -h * 0.55],      // up to peak 4
+      [w * 0.18, h * 0.55],       // down to last valley before right peak
+      [0, h * 0.45],              // straight down right edge
+      [-w, 0],                    // base
+    ],
+    left,
+    top,
+    [1, 1],
+    "F",
+  );
+  // Base bar
+  doc.rect(left, cy + h * 0.05, w, h * 0.18, "F");
+
+  // "RB" monogram
+  doc.setTextColor(...NAVY);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(size * 0.28);
+  doc.text("RB", cx, y + size - size * 0.18, { align: "center" });
+}
+
+function drawHeader(doc: jsPDF, title: string, meta: { label: string; value: string }[]) {
+  const pageW = doc.internal.pageSize.getWidth();
+
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, pageW, 110, "F");
+  doc.setFillColor(...GOLD);
+  doc.rect(0, 110, pageW, 5, "F");
+
+  drawLogo(doc, 40, 30, 50);
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.text("ROYAL BROILER", 104, 56);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(220, 226, 240);
+  doc.text("Poultry Business Management", 104, 72);
+  doc.text("Live Chicken Sales  •  Wholesale & Retail", 104, 86);
+
+  // Title
+  doc.setTextColor(...GOLD);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.text(title, pageW - 40, 50, { align: "right" });
+
+  // Meta lines
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9.5);
+  doc.setTextColor(220, 226, 240);
+  let my = 68;
+  for (const m of meta) {
+    doc.text(`${m.label}:`, pageW - 130, my, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text(m.value, pageW - 40, my, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(220, 226, 240);
+    my += 14;
+  }
+}
+
+function drawFooter(doc: jsPDF) {
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(...GOLD);
+    doc.setLineWidth(0.8);
+    doc.line(40, pageH - 48, pageW - 40, pageH - 48);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text("Thank you for your business — ROYAL BROILER", 40, pageH - 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Page ${i} of ${total}`, pageW - 40, pageH - 30, { align: "right" });
+  }
+}
+
 export function generateInvoicePDF(opts: {
   invoiceNo: string;
   date: string;
@@ -15,91 +126,116 @@ export function generateInvoicePDF(opts: {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
 
-  // Header band
-  doc.setFillColor(30, 58, 138);
-  doc.rect(0, 0, pageW, 90, "F");
-  doc.setFillColor(212, 175, 55);
-  doc.rect(0, 90, pageW, 6, "F");
+  drawHeader(doc, "INVOICE", [
+    { label: "Invoice No", value: `#${opts.invoiceNo}` },
+    { label: "Date", value: opts.date },
+  ]);
 
-  doc.setTextColor(255, 255, 255);
+  // Bill To card
+  const billTop = 140;
+  doc.setFillColor(...SOFT);
+  doc.roundedRect(40, billTop, pageW - 80, 86, 6, 6, "F");
+
+  doc.setTextColor(...MUTED);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
-  doc.text("ROYAL BROILER", 40, 45);
-  doc.setFontSize(11);
+  doc.setFontSize(9);
+  doc.text("BILL TO", 56, billTop + 20);
+
+  doc.setTextColor(...INK);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text(opts.customer.name, 56, billTop + 40);
+
   doc.setFont("helvetica", "normal");
-  doc.text("Poultry Business Management", 40, 65);
-
-  doc.setFontSize(20);
-  doc.setFont("helvetica", "bold");
-  doc.text("INVOICE", pageW - 40, 45, { align: "right" });
   doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(`#${opts.invoiceNo}`, pageW - 40, 65, { align: "right" });
-  doc.text(opts.date, pageW - 40, 80, { align: "right" });
+  doc.setTextColor(...MUTED);
+  let by = billTop + 58;
+  if (opts.customer.phone) {
+    doc.text(`Phone: ${opts.customer.phone}`, 56, by);
+    by += 14;
+  }
+  if (opts.customer.address) {
+    doc.text(opts.customer.address, 56, by, { maxWidth: pageW - 120 });
+  }
 
-  // Bill to
-  doc.setTextColor(20, 20, 30);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("BILL TO", 40, 130);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(12);
-  doc.text(opts.customer.name, 40, 148);
-  if (opts.customer.phone) doc.text(opts.customer.phone, 40, 164);
-  if (opts.customer.address) doc.text(opts.customer.address, 40, 180, { maxWidth: 300 });
-
-  // Items table
+  // Items table — generous spacing for print
   autoTable(doc, {
-    startY: 220,
-    head: [["Description", "Weight (kg)", "Rate / kg", "Amount"]],
+    startY: billTop + 110,
+    margin: { left: 40, right: 40 },
+    head: [["#", "Description", "Weight (kg)", "Rate / kg", "Amount"]],
     body: [
       [
+        "1",
         "Live chicken sale",
         opts.sale.weight_kg.toFixed(2),
-        `Rs. ${Number(opts.sale.rate_per_kg).toFixed(2)}`,
-        `Rs. ${Number(opts.sale.total_amount).toFixed(2)}`,
+        rs(opts.sale.rate_per_kg),
+        rs(opts.sale.total_amount),
       ],
     ],
     theme: "grid",
-    headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: "bold" },
-    styles: { fontSize: 11, cellPadding: 8 },
-    columnStyles: { 1: { halign: "right" }, 2: { halign: "right" }, 3: { halign: "right" } },
+    headStyles: {
+      fillColor: NAVY,
+      textColor: 255,
+      fontStyle: "bold",
+      fontSize: 10.5,
+      cellPadding: { top: 10, right: 12, bottom: 10, left: 12 },
+      lineColor: NAVY,
+    },
+    bodyStyles: {
+      fontSize: 11,
+      cellPadding: { top: 12, right: 12, bottom: 12, left: 12 },
+      lineColor: [225, 228, 235],
+      textColor: INK,
+    },
+    alternateRowStyles: { fillColor: [250, 251, 254] },
+    columnStyles: {
+      0: { halign: "center", cellWidth: 36 },
+      1: { cellWidth: "auto" },
+      2: { halign: "right", cellWidth: 90 },
+      3: { halign: "right", cellWidth: 90 },
+      4: { halign: "right", cellWidth: 110, fontStyle: "bold" },
+    },
   });
 
   // Summary box
-  const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
-  const boxX = pageW - 260;
-  doc.setDrawColor(212, 175, 55);
+  const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 24;
+  const boxW = 280;
+  const boxX = pageW - 40 - boxW;
+  const boxH = 108;
+
+  doc.setFillColor(...SOFT);
+  doc.roundedRect(boxX, finalY, boxW, boxH, 6, 6, "F");
+  doc.setDrawColor(...GOLD);
   doc.setLineWidth(1);
-  doc.rect(boxX, finalY, 220, 90);
+  doc.roundedRect(boxX, finalY, boxW, boxH, 6, 6, "S");
 
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-  doc.text("Previous balance", boxX + 12, finalY + 22);
-  doc.text(`Rs. ${opts.previousBalance.toFixed(2)}`, boxX + 208, finalY + 22, { align: "right" });
+  const row = (label: string, value: string, y: number, bold = false) => {
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setFontSize(bold ? 12 : 10.5);
+    doc.setTextColor(...(bold ? INK : MUTED));
+    doc.text(label, boxX + 16, y);
+    doc.setTextColor(...INK);
+    doc.text(value, boxX + boxW - 16, y, { align: "right" });
+  };
 
-  doc.text("This invoice", boxX + 12, finalY + 42);
-  doc.text(`Rs. ${Number(opts.sale.total_amount).toFixed(2)}`, boxX + 208, finalY + 42, { align: "right" });
+  row("Previous balance", rs(opts.previousBalance), finalY + 24);
+  row("This invoice", rs(opts.sale.total_amount), finalY + 44);
 
   doc.setDrawColor(220);
-  doc.line(boxX + 8, finalY + 54, boxX + 212, finalY + 54);
+  doc.line(boxX + 12, finalY + 58, boxX + boxW - 12, finalY + 58);
 
+  // Highlight current balance
+  doc.setFillColor(...NAVY);
+  doc.roundedRect(boxX + 8, finalY + 68, boxW - 16, 32, 4, 4, "F");
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(255, 255, 255);
+  doc.text("Current balance", boxX + 20, finalY + 88);
+  doc.setTextColor(...GOLD);
   doc.setFontSize(13);
-  doc.text("Current balance", boxX + 12, finalY + 76);
-  doc.text(`Rs. ${opts.currentBalance.toFixed(2)}`, boxX + 208, finalY + 76, { align: "right" });
+  doc.text(rs(opts.currentBalance), boxX + boxW - 20, finalY + 88, { align: "right" });
 
-  // Footer
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(9);
-  doc.setTextColor(100);
-  doc.text(
-    "Thank you for your business. — ROYAL BROILER",
-    pageW / 2,
-    doc.internal.pageSize.getHeight() - 30,
-    { align: "center" },
-  );
-
+  drawFooter(doc);
   return doc;
 }
 
@@ -111,47 +247,74 @@ export function generateStatementPDF(opts: {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
 
-  doc.setFillColor(30, 58, 138);
-  doc.rect(0, 0, pageW, 80, "F");
-  doc.setFillColor(212, 175, 55);
-  doc.rect(0, 80, pageW, 5, "F");
-  doc.setTextColor(255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(22);
-  doc.text("ROYAL BROILER", 40, 40);
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-  doc.text("Customer Statement", 40, 60);
-  doc.setFontSize(11);
-  doc.text(new Date().toLocaleDateString("en-IN"), pageW - 40, 60, { align: "right" });
+  drawHeader(doc, "STATEMENT", [
+    { label: "Generated", value: new Date().toLocaleDateString("en-IN") },
+    { label: "Account", value: opts.customer.name },
+  ]);
 
-  doc.setTextColor(20, 20, 30);
+  // Customer block
+  doc.setTextColor(...MUTED);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text(opts.customer.name, 40, 115);
+  doc.setFontSize(9);
+  doc.text("ACCOUNT HOLDER", 40, 145);
+  doc.setTextColor(...INK);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text(opts.customer.name, 40, 165);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  if (opts.customer.phone) doc.text(opts.customer.phone, 40, 130);
+  doc.setTextColor(...MUTED);
+  if (opts.customer.phone) doc.text(opts.customer.phone, 40, 180);
 
   autoTable(doc, {
-    startY: 150,
+    startY: 200,
+    margin: { left: 40, right: 40 },
     head: [["Date", "Description", "Debit", "Credit", "Balance"]],
     body: opts.rows.map((r) => [
       r.date,
       r.description,
-      r.debit ? `Rs. ${r.debit.toFixed(2)}` : "—",
-      r.credit ? `Rs. ${r.credit.toFixed(2)}` : "—",
-      `Rs. ${r.balance.toFixed(2)}`,
+      r.debit ? rs(r.debit) : "—",
+      r.credit ? rs(r.credit) : "—",
+      rs(r.balance),
     ]),
-    theme: "striped",
-    headStyles: { fillColor: [30, 58, 138], textColor: 255 },
-    styles: { fontSize: 10, cellPadding: 6 },
-    columnStyles: { 2: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "right" } },
+    theme: "grid",
+    headStyles: {
+      fillColor: NAVY,
+      textColor: 255,
+      fontStyle: "bold",
+      fontSize: 10.5,
+      cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
+      lineColor: NAVY,
+    },
+    bodyStyles: {
+      fontSize: 10,
+      cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
+      lineColor: [225, 228, 235],
+      textColor: INK,
+    },
+    alternateRowStyles: { fillColor: [250, 251, 254] },
+    columnStyles: {
+      0: { cellWidth: 80 },
+      1: { cellWidth: "auto" },
+      2: { halign: "right", cellWidth: 80 },
+      3: { halign: "right", cellWidth: 80 },
+      4: { halign: "right", cellWidth: 90, fontStyle: "bold" },
+    },
   });
 
-  const y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
+  const y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 24;
+  const boxW = 280;
+  const boxX = pageW - 40 - boxW;
+  doc.setFillColor(...NAVY);
+  doc.roundedRect(boxX, y, boxW, 44, 6, 6, "F");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text(`Outstanding balance: Rs. ${opts.currentBalance.toFixed(2)}`, pageW - 40, y, { align: "right" });
+  doc.setFontSize(11);
+  doc.setTextColor(255, 255, 255);
+  doc.text("OUTSTANDING BALANCE", boxX + 16, y + 19);
+  doc.setTextColor(...GOLD);
+  doc.setFontSize(15);
+  doc.text(rs(opts.currentBalance), boxX + boxW - 16, y + 30, { align: "right" });
+
+  drawFooter(doc);
   return doc;
 }
