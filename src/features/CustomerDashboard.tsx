@@ -8,6 +8,7 @@ import { useT } from "@/lib/i18n";
 import { Crown, Download, Receipt, Wallet } from "lucide-react";
 import { generateStatementPDF } from "@/lib/pdf";
 import { LedgerTable, buildLedger } from "@/components/LedgerTable";
+import { PayBillDialog } from "@/components/PayBillDialog";
 
 export function CustomerDashboard() {
   const { customerId, profile } = useAuth();
@@ -66,11 +67,14 @@ export function CustomerDashboard() {
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Card className={balance > 0 ? "border-destructive/40" : "border-success/40"}>
-          <CardContent className="p-5">
-            <div className="text-xs text-muted-foreground uppercase tracking-wider">{t("pending")}</div>
-            <div className={`mt-1 font-display text-3xl font-bold ${balance > 0 ? "text-destructive" : "text-success"}`}>
-              {inr(balance)}
+          <CardContent className="p-5 space-y-3">
+            <div>
+              <div className="text-xs text-muted-foreground uppercase tracking-wider">{t("pending")}</div>
+              <div className={`mt-1 font-display text-3xl font-bold ${balance > 0 ? "text-destructive" : "text-success"}`}>
+                {inr(balance)}
+              </div>
             </div>
+            {balance > 0 && <PayBillDialog balance={balance} customerName={c?.name} />}
           </CardContent>
         </Card>
         <Card>
