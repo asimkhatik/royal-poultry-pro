@@ -5,7 +5,6 @@ import { Crown, Receipt, Scale, TrendingUp, Wallet, Users } from "lucide-react";
 import { inr, kg, fmtDate, todayISO } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { StatCard } from "@/components/StatCard";
-// (local legacy StatCard removed; using shared component)
 import {
   Bar,
   BarChart,
