@@ -220,38 +220,3 @@ export function AdminDashboard() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  accent,
-  danger,
-}: {
-  label: string;
-  value: string;
-  icon: React.ComponentType<{ className?: string }>;
-  accent?: boolean;
-  danger?: boolean;
-}) {
-  return (
-    <Card className={accent ? "border-gold/40 shadow-gold" : ""}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
-            <div className={`mt-1 font-display text-xl lg:text-2xl font-bold ${danger ? "text-destructive" : ""}`}>
-              {value}
-            </div>
-          </div>
-          <div
-            className={`size-9 rounded-lg flex items-center justify-center ${
-              accent ? "gold-gradient text-gold-foreground" : "bg-secondary text-secondary-foreground"
-            }`}
-          >
-            <Icon className="size-4" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
