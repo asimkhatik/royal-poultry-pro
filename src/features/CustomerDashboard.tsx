@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { inr, kg, fmtDate } from "@/lib/format";
+import { inr, inrShort, kg, fmtDate } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { Crown, Download, Receipt, Wallet } from "lucide-react";
 import { generateStatementPDF } from "@/lib/pdf";
