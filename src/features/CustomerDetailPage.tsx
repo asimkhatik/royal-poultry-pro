@@ -175,15 +175,19 @@ Thank you for your business!`,
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "danger" | "success" }) {
+  const color =
+    tone === "danger"
+      ? "text-[oklch(0.55_0.20_25)] dark:text-[oklch(0.72_0.20_25)]"
+      : tone === "success"
+        ? "text-[oklch(0.45_0.14_150)] dark:text-[oklch(0.78_0.16_150)]"
+        : "text-foreground";
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
-        <div
-          className={`mt-1 font-display text-xl lg:text-2xl font-bold ${
-            tone === "danger" ? "text-destructive" : tone === "success" ? "text-success" : ""
-          }`}
-        >
+      <CardContent className="p-4 sm:p-5">
+        <div className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-[0.12em]">
+          {label}
+        </div>
+        <div className={`mt-2 font-stat tabular-nums leading-none text-2xl sm:text-[28px] ${color}`}>
           {value}
         </div>
       </CardContent>
