@@ -25,6 +25,7 @@ export function SalesPage() {
   const [form, setForm] = useState({
     customer_id: "",
     sale_date: todayISO(),
+    quantity_of_broilers: "",
     weight_kg: "",
     rate_per_kg: "",
     notes: "",
@@ -44,7 +45,7 @@ export function SalesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sales")
-        .select("id,sale_date,weight_kg,rate_per_kg,total_amount,notes,customer:customers(id,name)")
+        .select("id,sale_date,quantity_of_broilers,weight_kg,rate_per_kg,total_amount,notes,customer:customers(id,name)")
         .order("sale_date", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(200);
@@ -64,6 +65,7 @@ export function SalesPage() {
       const { error } = await supabase.from("sales").insert({
         customer_id: form.customer_id,
         sale_date: form.sale_date,
+        quantity_of_broilers: form.quantity_of_broilers ? Number(form.quantity_of_broilers) : null,
         weight_kg: Number(form.weight_kg),
         rate_per_kg: Number(form.rate_per_kg),
         total_amount: total,
@@ -77,7 +79,7 @@ export function SalesPage() {
       qc.invalidateQueries({ queryKey: ["customers"] });
       qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
       setOpen(false);
-      setForm({ customer_id: "", sale_date: todayISO(), weight_kg: "", rate_per_kg: "", notes: "" });
+      setForm({ customer_id: "", sale_date: todayISO(), quantity_of_broilers: "", weight_kg: "", rate_per_kg: "", notes: "" });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -100,6 +102,7 @@ export function SalesPage() {
       Sales: sales.map((s) => ({
         Date: s.sale_date,
         Customer: (s.customer as { name: string } | null)?.name ?? "",
+        "Quantity (birds)": s.quantity_of_broilers ?? "",
         "Weight (kg)": Number(s.weight_kg),
         "Rate /kg": Number(s.rate_per_kg),
         Total: Number(s.total_amount),
@@ -150,14 +153,18 @@ export function SalesPage() {
                     <Input type="date" value={form.sale_date} onChange={(e) => setForm({ ...form, sale_date: e.target.value })} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("weight")}</Label>
+                    <Label>Quantity (birds)</Label>
+                    <Input type="number" step="1" min="0" placeholder="e.g. 100" value={form.quantity_of_broilers} onChange={(e) => setForm({ ...form, quantity_of_broilers: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>{t("weight")} (kg)</Label>
                     <Input type="number" step="0.01" min="0.01" required value={form.weight_kg} onChange={(e) => setForm({ ...form, weight_kg: e.target.value })} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("rate")}</Label>
+                    <Label>{t("rate")} (₹/kg)</Label>
                     <Input type="number" step="0.01" min="0" required value={form.rate_per_kg} onChange={(e) => setForm({ ...form, rate_per_kg: e.target.value })} />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 col-span-2">
                     <Label>{t("total")}</Label>
                     <Input value={inr(total)} disabled className="font-semibold" />
                   </div>
@@ -189,7 +196,7 @@ export function SalesPage() {
                   <div className="min-w-0">
                     <div className="font-medium truncate">{(s.customer as { name: string } | null)?.name ?? "—"}</div>
                     <div className="text-xs text-muted-foreground">
-                      {fmtDate(s.sale_date)} · {kg(s.weight_kg)} @ {inr(s.rate_per_kg)}
+                      {fmtDate(s.sale_date)} · {s.quantity_of_broilers ? `${s.quantity_of_broilers} birds · ` : ""}{kg(s.weight_kg)} @ {inr(s.rate_per_kg)}
                     </div>
                   </div>
                   <div className="font-semibold text-primary">{inr(s.total_amount)}</div>

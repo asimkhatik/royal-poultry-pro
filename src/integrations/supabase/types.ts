@@ -22,9 +22,11 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          reminder_enabled: boolean
           status: string
           updated_at: string
           user_id: string | null
+          whatsapp_number: string | null
         }
         Insert: {
           address?: string | null
@@ -33,9 +35,11 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          reminder_enabled?: boolean
           status?: string
           updated_at?: string
           user_id?: string | null
+          whatsapp_number?: string | null
         }
         Update: {
           address?: string | null
@@ -44,9 +48,11 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          reminder_enabled?: boolean
           status?: string
           updated_at?: string
           user_id?: string | null
+          whatsapp_number?: string | null
         }
         Relationships: []
       }
@@ -59,7 +65,10 @@ export type Database = {
           id: string
           notes: string | null
           payment_date: string
+          payment_gateway: string | null
           payment_mode: Database["public"]["Enums"]["payment_mode"]
+          payment_status: string
+          transaction_id: string | null
         }
         Insert: {
           amount: number
@@ -69,7 +78,10 @@ export type Database = {
           id?: string
           notes?: string | null
           payment_date?: string
+          payment_gateway?: string | null
           payment_mode?: Database["public"]["Enums"]["payment_mode"]
+          payment_status?: string
+          transaction_id?: string | null
         }
         Update: {
           amount?: number
@@ -79,7 +91,10 @@ export type Database = {
           id?: string
           notes?: string | null
           payment_date?: string
+          payment_gateway?: string | null
           payment_mode?: Database["public"]["Enums"]["payment_mode"]
+          payment_status?: string
+          transaction_id?: string | null
         }
         Relationships: [
           {
@@ -136,6 +151,7 @@ export type Database = {
           customer_id: string
           id: string
           notes: string | null
+          quantity_of_broilers: number | null
           rate_per_kg: number
           sale_date: string
           total_amount: number
@@ -147,6 +163,7 @@ export type Database = {
           customer_id: string
           id?: string
           notes?: string | null
+          quantity_of_broilers?: number | null
           rate_per_kg: number
           sale_date?: string
           total_amount: number
@@ -158,6 +175,7 @@ export type Database = {
           customer_id?: string
           id?: string
           notes?: string | null
+          quantity_of_broilers?: number | null
           rate_per_kg?: number
           sale_date?: string
           total_amount?: number
