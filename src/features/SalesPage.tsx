@@ -45,7 +45,7 @@ export function SalesPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sales")
-        .select("id,sale_date,weight_kg,rate_per_kg,total_amount,notes,customer:customers(id,name)")
+        .select("id,sale_date,quantity_of_broilers,weight_kg,rate_per_kg,total_amount,notes,customer:customers(id,name)")
         .order("sale_date", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(200);
