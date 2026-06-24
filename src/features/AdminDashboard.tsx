@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Crown, Receipt, Scale, TrendingUp, Wallet, Users } from "lucide-react";
 import { inr, kg, fmtDate, todayISO } from "@/lib/format";
 import { useT } from "@/lib/i18n";
+import { StatCard } from "@/components/StatCard";
 import {
   Bar,
   BarChart,
@@ -103,15 +104,15 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t("todaySales")} value={inr(data?.todayRevenue ?? 0)} icon={Receipt} accent />
-        <StatCard label={t("todayWeight")} value={kg(data?.todayWeight ?? 0)} icon={Scale} />
-        <StatCard label={t("totalRevenue")} value={inr(data?.totalRevenue ?? 0)} icon={TrendingUp} />
-        <StatCard label={t("outstanding")} value={inr(data?.outstanding ?? 0)} icon={Wallet} danger={Number(data?.outstanding ?? 0) > 0} />
+        <StatCard label={t("todaySales")} value={Number(data?.todayRevenue ?? 0)} format="currency" tone="revenue" icon={Receipt} highlight />
+        <StatCard label={t("todayWeight")} value={Number(data?.todayWeight ?? 0)} format="weight" tone="weight" icon={Scale} />
+        <StatCard label={t("totalRevenue")} value={Number(data?.totalRevenue ?? 0)} format="currency" tone="revenue" icon={TrendingUp} />
+        <StatCard label={t("outstanding")} value={Number(data?.outstanding ?? 0)} format="currency" tone="outstanding" icon={Wallet} />
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t("totalCustomers")} value={String(data?.totalCustomers ?? 0)} icon={Users} />
-        <StatCard label={t("totalPaid")} value={inr(data?.totalPaid ?? 0)} icon={Wallet} />
+        <StatCard label={t("totalCustomers")} value={Number(data?.totalCustomers ?? 0)} format="count" tone="customers" icon={Users} />
+        <StatCard label={t("totalPaid")} value={Number(data?.totalPaid ?? 0)} format="currency" tone="paid" icon={Wallet} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -218,38 +219,3 @@ export function AdminDashboard() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  accent,
-  danger,
-}: {
-  label: string;
-  value: string;
-  icon: React.ComponentType<{ className?: string }>;
-  accent?: boolean;
-  danger?: boolean;
-}) {
-  return (
-    <Card className={accent ? "border-gold/40 shadow-gold" : ""}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
-            <div className={`mt-1 font-display text-xl lg:text-2xl font-bold ${danger ? "text-destructive" : ""}`}>
-              {value}
-            </div>
-          </div>
-          <div
-            className={`size-9 rounded-lg flex items-center justify-center ${
-              accent ? "gold-gradient text-gold-foreground" : "bg-secondary text-secondary-foreground"
-            }`}
-          >
-            <Icon className="size-4" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}

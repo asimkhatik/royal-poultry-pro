@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BarChart3, Download } from "lucide-react";
-import { inr, kg, fmtDate, todayISO } from "@/lib/format";
+import { inr, inrShort, kg, fmtDate, todayISO } from "@/lib/format";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -131,9 +131,9 @@ export function ReportsPage() {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Metric label="Weight sold" value={kg(summary.totalWeight)} />
-        <Metric label="Total sales" value={inr(summary.totalSales)} />
-        <Metric label="Collections" value={inr(summary.totalCollections)} />
-        <Metric label="Outstanding (all)" value={inr(totalOutstanding)} danger />
+       <Metric label="Total sales" value={inrShort(summary.totalSales)} />
+       <Metric label="Collections" value={inrShort(summary.totalCollections)} />
+       <Metric label="Outstanding (all)" value={inrShort(totalOutstanding)} danger />
       </div>
 
       <Card>
@@ -212,9 +212,19 @@ export function ReportsPage() {
 function Metric({ label, value, danger }: { label: string; value: string; danger?: boolean }) {
   return (
     <Card>
-      <CardContent className="p-4">
-        <div className="text-xs text-muted-foreground uppercase tracking-wider">{label}</div>
-        <div className={`mt-1 font-display text-2xl font-bold ${danger ? "text-destructive" : ""}`}>{value}</div>
+      <CardContent className="p-4 sm:p-5">
+        <div className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-[0.12em]">
+          {label}
+        </div>
+        <div
+          className={`mt-2 font-stat tabular-nums leading-none text-2xl sm:text-[28px] ${
+            danger
+              ? "text-[oklch(0.55_0.20_25)] dark:text-[oklch(0.72_0.20_25)]"
+              : "text-foreground"
+          }`}
+        >
+          {value}
+        </div>
       </CardContent>
     </Card>
   );

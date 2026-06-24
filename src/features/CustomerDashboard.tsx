@@ -3,12 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { inr, kg, fmtDate } from "@/lib/format";
+import { inr, inrShort, kg, fmtDate } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { Crown, Download, Receipt, Wallet } from "lucide-react";
 import { generateStatementPDF } from "@/lib/pdf";
 import { LedgerTable, buildLedger } from "@/components/LedgerTable";
 import { PayBillDialog } from "@/components/PayBillDialog";
+import { StatCard } from "@/components/StatCard";
 
 export function CustomerDashboard() {
   const { customerId, profile } = useAuth();
@@ -67,32 +68,26 @@ export function CustomerDashboard() {
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
         <Card className={balance > 0 ? "border-destructive/40" : "border-success/40"}>
-          <CardContent className="p-5 space-y-3">
+          <CardContent className="p-5 space-y-4">
             <div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wider">{t("pending")}</div>
-              <div className={`mt-1 font-display text-3xl font-bold ${balance > 0 ? "text-destructive" : "text-success"}`}>
-                {inr(balance)}
+              <div className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-[0.12em]">
+                {t("pending")}
+              </div>
+              <div
+                className={`mt-2 font-stat tabular-nums leading-none text-3xl sm:text-4xl ${
+                  balance > 0
+                    ? "text-[oklch(0.55_0.20_25)] dark:text-[oklch(0.72_0.20_25)]"
+                    : "text-[oklch(0.45_0.14_150)] dark:text-[oklch(0.78_0.16_150)]"
+                }`}
+              >
+                {inrShort(balance)}
               </div>
             </div>
             {balance > 0 && <PayBillDialog balance={balance} customerName={c?.name} />}
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-5">
-            <div className="text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-              <Receipt className="size-3.5" /> {t("totalPurchase")}
-            </div>
-            <div className="mt-1 font-display text-3xl font-bold">{inr(totalPurchase)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5">
-            <div className="text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-              <Wallet className="size-3.5" /> {t("totalPaid")}
-            </div>
-            <div className="mt-1 font-display text-3xl font-bold text-success">{inr(totalPaid)}</div>
-          </CardContent>
-        </Card>
+        <StatCard label={t("totalPurchase")} value={totalPurchase} format="currency" tone="revenue" icon={Receipt} size="lg" />
+        <StatCard label={t("totalPaid")} value={totalPaid} format="currency" tone="paid" icon={Wallet} size="lg" />
       </div>
 
       <Card>
