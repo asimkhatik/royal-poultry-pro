@@ -152,14 +152,18 @@ export function SalesPage() {
                     <Input type="date" value={form.sale_date} onChange={(e) => setForm({ ...form, sale_date: e.target.value })} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("weight")}</Label>
+                    <Label>Quantity (birds)</Label>
+                    <Input type="number" step="1" min="0" placeholder="e.g. 100" value={form.quantity_of_broilers} onChange={(e) => setForm({ ...form, quantity_of_broilers: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>{t("weight")} (kg)</Label>
                     <Input type="number" step="0.01" min="0.01" required value={form.weight_kg} onChange={(e) => setForm({ ...form, weight_kg: e.target.value })} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{t("rate")}</Label>
+                    <Label>{t("rate")} (₹/kg)</Label>
                     <Input type="number" step="0.01" min="0" required value={form.rate_per_kg} onChange={(e) => setForm({ ...form, rate_per_kg: e.target.value })} />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 col-span-2">
                     <Label>{t("total")}</Label>
                     <Input value={inr(total)} disabled className="font-semibold" />
                   </div>
