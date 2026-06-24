@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Crown, Receipt, Scale, TrendingUp, Wallet, Users } from "lucide-react";
 import { inr, kg, fmtDate, todayISO } from "@/lib/format";
 import { useT } from "@/lib/i18n";
+import { StatCard } from "@/components/StatCard";
 import {
   Bar,
   BarChart,
