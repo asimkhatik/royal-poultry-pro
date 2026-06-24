@@ -9,6 +9,7 @@ import { Crown, Download, Receipt, Wallet } from "lucide-react";
 import { generateStatementPDF } from "@/lib/pdf";
 import { LedgerTable, buildLedger } from "@/components/LedgerTable";
 import { PayBillDialog } from "@/components/PayBillDialog";
+import { StatCard } from "@/components/StatCard";
 
 export function CustomerDashboard() {
   const { customerId, profile } = useAuth();
