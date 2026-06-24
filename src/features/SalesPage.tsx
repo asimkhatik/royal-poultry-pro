@@ -102,6 +102,7 @@ export function SalesPage() {
       Sales: sales.map((s) => ({
         Date: s.sale_date,
         Customer: (s.customer as { name: string } | null)?.name ?? "",
+        "Quantity (birds)": s.quantity_of_broilers ?? "",
         "Weight (kg)": Number(s.weight_kg),
         "Rate /kg": Number(s.rate_per_kg),
         Total: Number(s.total_amount),
