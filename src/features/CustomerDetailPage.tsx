@@ -131,9 +131,9 @@ Thank you for your business!`,
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <Stat label="Outstanding" value={inr(c.current_balance)} tone={Number(c.current_balance) > 0 ? "danger" : "success"} />
-        <Stat label="Total purchase" value={inr(totalPurchase)} />
-        <Stat label="Total paid" value={inr(totalPaid)} tone="success" />
+       <Stat label="Outstanding" value={inrShort(c.current_balance)} tone={Number(c.current_balance) > 0 ? "danger" : "success"} />
+       <Stat label="Total purchase" value={inrShort(totalPurchase)} />
+       <Stat label="Total paid" value={inrShort(totalPaid)} tone="success" />
       </div>
 
       <Card>
