@@ -196,7 +196,7 @@ export function SalesPage() {
                   <div className="min-w-0">
                     <div className="font-medium truncate">{(s.customer as { name: string } | null)?.name ?? "—"}</div>
                     <div className="text-xs text-muted-foreground">
-                      {fmtDate(s.sale_date)} · {kg(s.weight_kg)} @ {inr(s.rate_per_kg)}
+                      {fmtDate(s.sale_date)} · {s.quantity_of_broilers ? `${s.quantity_of_broilers} birds · ` : ""}{kg(s.weight_kg)} @ {inr(s.rate_per_kg)}
                     </div>
                   </div>
                   <div className="font-semibold text-primary">{inr(s.total_amount)}</div>
