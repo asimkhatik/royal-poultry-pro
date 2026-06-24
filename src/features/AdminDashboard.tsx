@@ -105,15 +105,15 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t("todaySales")} value={inr(data?.todayRevenue ?? 0)} icon={Receipt} accent />
-        <StatCard label={t("todayWeight")} value={kg(data?.todayWeight ?? 0)} icon={Scale} />
-        <StatCard label={t("totalRevenue")} value={inr(data?.totalRevenue ?? 0)} icon={TrendingUp} />
-        <StatCard label={t("outstanding")} value={inr(data?.outstanding ?? 0)} icon={Wallet} danger={Number(data?.outstanding ?? 0) > 0} />
+        <StatCard label={t("todaySales")} value={Number(data?.todayRevenue ?? 0)} format="currency" tone="revenue" icon={Receipt} highlight />
+        <StatCard label={t("todayWeight")} value={Number(data?.todayWeight ?? 0)} format="weight" tone="weight" icon={Scale} />
+        <StatCard label={t("totalRevenue")} value={Number(data?.totalRevenue ?? 0)} format="currency" tone="revenue" icon={TrendingUp} />
+        <StatCard label={t("outstanding")} value={Number(data?.outstanding ?? 0)} format="currency" tone="outstanding" icon={Wallet} />
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t("totalCustomers")} value={String(data?.totalCustomers ?? 0)} icon={Users} />
-        <StatCard label={t("totalPaid")} value={inr(data?.totalPaid ?? 0)} icon={Wallet} />
+        <StatCard label={t("totalCustomers")} value={Number(data?.totalCustomers ?? 0)} format="count" tone="customers" icon={Users} />
+        <StatCard label={t("totalPaid")} value={Number(data?.totalPaid ?? 0)} format="currency" tone="paid" icon={Wallet} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
