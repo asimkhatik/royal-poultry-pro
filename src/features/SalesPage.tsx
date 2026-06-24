@@ -65,6 +65,7 @@ export function SalesPage() {
       const { error } = await supabase.from("sales").insert({
         customer_id: form.customer_id,
         sale_date: form.sale_date,
+        quantity_of_broilers: form.quantity_of_broilers ? Number(form.quantity_of_broilers) : null,
         weight_kg: Number(form.weight_kg),
         rate_per_kg: Number(form.rate_per_kg),
         total_amount: total,
@@ -78,7 +79,7 @@ export function SalesPage() {
       qc.invalidateQueries({ queryKey: ["customers"] });
       qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
       setOpen(false);
-      setForm({ customer_id: "", sale_date: todayISO(), weight_kg: "", rate_per_kg: "", notes: "" });
+      setForm({ customer_id: "", sale_date: todayISO(), quantity_of_broilers: "", weight_kg: "", rate_per_kg: "", notes: "" });
     },
     onError: (e: Error) => toast.error(e.message),
   });
