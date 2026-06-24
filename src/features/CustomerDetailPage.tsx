@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, ChevronLeft, FileText, Share2 } from "lucide-react";
-import { inr, kg, fmtDate } from "@/lib/format";
+import { inr, inrShort, kg, fmtDate } from "@/lib/format";
 import { buildLedger, LedgerTable } from "@/components/LedgerTable";
 import { generateInvoicePDF, generateStatementPDF } from "@/lib/pdf";
 import { exportToExcel } from "@/lib/excel";
