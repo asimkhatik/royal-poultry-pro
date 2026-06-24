@@ -25,6 +25,7 @@ export function SalesPage() {
   const [form, setForm] = useState({
     customer_id: "",
     sale_date: todayISO(),
+    quantity_of_broilers: "",
     weight_kg: "",
     rate_per_kg: "",
     notes: "",
