@@ -131,9 +131,9 @@ export function ReportsPage() {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Metric label="Weight sold" value={kg(summary.totalWeight)} />
-        <Metric label="Total sales" value={inr(summary.totalSales)} />
-        <Metric label="Collections" value={inr(summary.totalCollections)} />
-        <Metric label="Outstanding (all)" value={inr(totalOutstanding)} danger />
+       <Metric label="Total sales" value={inrShort(summary.totalSales)} />
+       <Metric label="Collections" value={inrShort(summary.totalCollections)} />
+       <Metric label="Outstanding (all)" value={inrShort(totalOutstanding)} danger />
       </div>
 
       <Card>
