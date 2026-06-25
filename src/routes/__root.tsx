@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { I18nProvider } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
+import { ROYAL_BROILER_LOGO_URL } from "@/components/BrandLogo";
 
 function NotFoundComponent() {
   return (
@@ -80,18 +81,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ROYAL BROILER — Poultry Business Management" },
       { name: "description", content: "Manage daily live chicken sales, customer ledgers, payments, and reports for your poultry business." },
-      { name: "theme-color", content: "#1e3a8a" },
+      { name: "theme-color", content: "#0B3D2E" },
       { property: "og:title", content: "ROYAL BROILER — Poultry Business Management" },
       { property: "og:description", content: "Manage daily live chicken sales, customer ledgers, payments, and reports for your poultry business." },
       { property: "og:type", content: "website" },
       { name: "twitter:title", content: "ROYAL BROILER — Poultry Business Management" },
       { name: "twitter:description", content: "Manage daily live chicken sales, customer ledgers, payments, and reports for your poultry business." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1435b5fd-e906-4d18-99d4-6b85debcafa1/id-preview-ffa048de--868a3e2f-1b3a-4b57-b246-a91ab1bd0ef9.lovable.app-1782193150277.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1435b5fd-e906-4d18-99d4-6b85debcafa1/id-preview-ffa048de--868a3e2f-1b3a-4b57-b246-a91ab1bd0ef9.lovable.app-1782193150277.png" },
+      { property: "og:image", content: ROYAL_BROILER_LOGO_URL },
+      { name: "twitter:image", content: ROYAL_BROILER_LOGO_URL },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: ROYAL_BROILER_LOGO_URL },
+      { rel: "apple-touch-icon", href: ROYAL_BROILER_LOGO_URL },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

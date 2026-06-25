@@ -30,12 +30,13 @@ export function CustomerDetailPage({ id }: { id: string }) {
   const totalPurchase = data!.sales.reduce((a, s) => a + Number(s.total_amount), 0);
   const totalPaid = data!.payments.reduce((a, p) => a + Number(p.amount), 0);
 
-  const downloadStatement = () => {
-    generateStatementPDF({
+  const downloadStatement = async () => {
+    const pdf = await generateStatementPDF({
       customer: { name: c.name, phone: c.phone, address: c.address },
       rows,
       currentBalance: Number(c.current_balance),
-    }).save(`statement-${c.name.replace(/\s+/g, "_")}.pdf`);
+    });
+    pdf.save(`statement-${c.name.replace(/\s+/g, "_")}.pdf`);
   };
 
   const exportXLSX = () => {
@@ -62,7 +63,7 @@ export function CustomerDetailPage({ id }: { id: string }) {
     });
   };
 
-  const downloadInvoice = (saleId: string) => {
+  const downloadInvoice = async (saleId: string) => {
     const idx = data!.sales.findIndex((s) => s.id === saleId);
     if (idx < 0) return;
     const sale = data!.sales[idx];
@@ -73,7 +74,7 @@ export function CustomerDetailPage({ id }: { id: string }) {
       if (new Date(p.payment_date) < new Date(sale.sale_date)) prev -= Number(p.amount);
     }
     const current = prev + Number(sale.total_amount);
-    const pdf = generateInvoicePDF({
+    const pdf = await generateInvoicePDF({
       invoiceNo: sale.id.slice(0, 8).toUpperCase(),
       date: fmtDate(sale.sale_date),
       customer: { name: c.name, phone: c.phone, address: c.address },

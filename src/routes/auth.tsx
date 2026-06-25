@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Crown, Mail, Lock, Phone, User, Sparkles, ShieldCheck } from "lucide-react";
+import { Mail, Lock, Phone, User, Sparkles, ShieldCheck, Crown } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -79,10 +80,10 @@ function AuthPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[oklch(0.18_0.06_265)] text-primary-foreground">
+    <div className="relative min-h-screen overflow-hidden bg-[oklch(0.18_0.05_155)] text-primary-foreground">
       {/* Aurora background */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 -left-32 size-[28rem] rounded-full bg-[oklch(0.45_0.18_265)] opacity-50 blur-3xl" />
+        <div className="absolute -top-32 -left-32 size-[28rem] rounded-full bg-[oklch(0.40_0.10_155)] opacity-50 blur-3xl" />
         <div className="absolute top-1/3 -right-40 size-[32rem] rounded-full bg-[oklch(0.78_0.18_85)] opacity-30 blur-3xl" />
         <div className="absolute -bottom-40 left-1/4 size-[26rem] rounded-full bg-[oklch(0.55_0.20_300)] opacity-25 blur-3xl" />
         <div
@@ -99,26 +100,26 @@ function AuthPage() {
         {/* Brand side */}
         <div className="flex flex-1 items-center px-6 pt-10 pb-4 lg:px-10 lg:py-16">
           <div className="w-full max-w-md mx-auto lg:mx-0">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="size-14 rounded-2xl gold-gradient flex items-center justify-center shadow-gold ring-1 ring-white/20">
-                <Crown className="size-7 text-gold-foreground" />
+            <div className="flex flex-col items-center lg:items-start mb-8">
+              <div className="size-24 rounded-3xl overflow-hidden ring-2 ring-gold/40 shadow-gold bg-white/5 mb-4">
+                <BrandLogo className="size-24 object-cover" />
               </div>
-              <div>
-                <div className="font-display font-bold text-2xl tracking-tight">ROYAL</div>
-                <div className="text-xs text-gold tracking-[0.4em] -mt-0.5">BROILER</div>
+              <div className="text-center lg:text-left">
+                <div className="font-display font-bold text-2xl tracking-tight">ROYAL BROILER</div>
+                <div className="text-xs text-gold tracking-[0.4em] mt-1">MANAGE • GROW • SUCCEED</div>
               </div>
             </div>
 
             <h1 className="font-display text-4xl lg:text-5xl font-bold leading-[1.05] tracking-tight">
-              Run your poultry business
+              Welcome to
               <span className="block bg-gradient-to-r from-[oklch(0.92_0.12_85)] via-[oklch(0.82_0.16_75)] to-[oklch(0.95_0.05_85)] bg-clip-text text-transparent">
-                like royalty.
+                ROYAL BROILER
               </span>
             </h1>
 
             <p className="mt-5 text-base lg:text-lg text-primary-foreground/75 leading-relaxed">
-              Daily sales, customer ledgers, automatic balances and professional
-              invoices — all in one premium cloud workspace.
+              Manage • Grow • Succeed — your complete poultry business workspace
+              for daily sales, customer ledgers, and professional invoices.
             </p>
 
             <ul className="mt-8 space-y-3 text-sm">

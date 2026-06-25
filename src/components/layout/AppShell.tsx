@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { useT, type Lang } from "@/lib/i18n";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
@@ -70,8 +71,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="hidden lg:flex w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
         <div className="p-6 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl gold-gradient flex items-center justify-center shadow-gold">
-              <Crown className="size-5 text-gold-foreground" />
+            <div className="size-12 rounded-2xl overflow-hidden ring-1 ring-gold/40 shadow-gold bg-white/5">
+              <BrandLogo className="size-12 object-cover" />
             </div>
             <div>
               <div className="font-display text-lg font-bold tracking-tight">ROYAL</div>
@@ -118,8 +119,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="lg:hidden sticky top-0 z-40 royal-gradient text-primary-foreground border-b border-sidebar-border">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="size-9 rounded-lg gold-gradient flex items-center justify-center">
-              <Crown className="size-4 text-gold-foreground" />
+            <div className="size-10 rounded-xl overflow-hidden ring-1 ring-gold/40 bg-white/5">
+              <BrandLogo className="size-10 object-cover" />
             </div>
             <div>
               <div className="font-display font-bold text-sm tracking-tight">ROYAL BROILER</div>
