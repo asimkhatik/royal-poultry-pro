@@ -44,9 +44,9 @@ export function CustomerDashboard() {
   const balance = Number(c?.current_balance ?? 0);
   const rows = buildLedger(data?.sales ?? [], data?.payments ?? []);
 
-  const downloadStatement = () => {
+  const downloadStatement = async () => {
     if (!c) return;
-    const pdf = generateStatementPDF({
+    const pdf = await generateStatementPDF({
       customer: { name: c.name, phone: c.phone, address: c.address },
       rows,
       currentBalance: balance,
