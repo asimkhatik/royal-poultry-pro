@@ -1,58 +1,65 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { ROYAL_BROILER_LOGO_URL } from "@/components/BrandLogo";
 
 type Customer = { name: string; phone?: string | null; address?: string | null };
 type Sale = { id: string; sale_date: string; weight_kg: number; rate_per_kg: number; total_amount: number };
 
-const NAVY: [number, number, number] = [30, 58, 138];
-const GOLD: [number, number, number] = [212, 175, 55];
+// Royal Broiler brand
+const NAVY: [number, number, number] = [11, 61, 46]; // Dark Royal Green #0B3D2E
+const GOLD: [number, number, number] = [212, 175, 55]; // Premium Gold #D4AF37
 const INK: [number, number, number] = [20, 20, 30];
 const MUTED: [number, number, number] = [110, 116, 130];
 const SOFT: [number, number, number] = [245, 247, 252];
 
 const rs = (n: number) => `Rs. ${Number(n).toFixed(2)}`;
 
-/** Vector crown + "RB" badge, drawn at (x, y). Size in pt. */
-function drawLogo(doc: jsPDF, x: number, y: number, size = 44) {
-  // Gold rounded badge
+// Cached logo dataURL — loaded once per session.
+let logoDataPromise: Promise<string | null> | null = null;
+function loadLogoDataUrl(): Promise<string | null> {
+  if (logoDataPromise) return logoDataPromise;
+  logoDataPromise = new Promise((resolve) => {
+    try {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(null);
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = ROYAL_BROILER_LOGO_URL;
+    } catch {
+      resolve(null);
+    }
+  });
+  return logoDataPromise;
+}
+
+function drawLogo(doc: jsPDF, dataUrl: string | null, x: number, y: number, size = 50) {
+  if (dataUrl) {
+    try {
+      doc.addImage(dataUrl, "PNG", x, y, size, size, undefined, "FAST");
+      return;
+    } catch {
+      /* fall through to fallback badge */
+    }
+  }
+  // Fallback gold badge
   doc.setFillColor(...GOLD);
   doc.roundedRect(x, y, size, size, 8, 8, "F");
-
-  // Crown silhouette (5 points)
-  const cx = x + size / 2;
-  const cy = y + size * 0.42;
-  const w = size * 0.62;
-  const h = size * 0.28;
-  doc.setFillColor(...NAVY);
-  const left = cx - w / 2;
-  const right = cx + w / 2;
-  const top = cy - h;
-  // Crown polygon via lines
-  doc.lines(
-    [
-      [w * 0.18, h * 0.55],       // down-right to first valley
-      [w * 0.14, -h * 0.55],      // up to peak 2
-      [w * 0.18, h * 0.55],       // down to center valley
-      [w * 0.14, -h],             // up to center tall peak
-      [w * 0.14, h],              // down to next valley
-      [w * 0.18, -h * 0.55],      // up to peak 4
-      [w * 0.18, h * 0.55],       // down to last valley before right peak
-      [0, h * 0.45],              // straight down right edge
-      [-w, 0],                    // base
-    ],
-    left,
-    top,
-    [1, 1],
-    "F",
-  );
-  // Base bar
-  doc.rect(left, cy + h * 0.05, w, h * 0.18, "F");
-
-  // "RB" monogram
   doc.setTextColor(...NAVY);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(size * 0.28);
-  doc.text("RB", cx, y + size - size * 0.18, { align: "center" });
+  doc.setFontSize(size * 0.32);
+  doc.text("RB", x + size / 2, y + size * 0.65, { align: "center" });
 }
 
 function drawHeader(doc: jsPDF, title: string, meta: { label: string; value: string }[]) {
