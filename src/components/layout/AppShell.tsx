@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { useT, type Lang } from "@/lib/i18n";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
