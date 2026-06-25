@@ -247,15 +247,16 @@ export async function generateInvoicePDF(opts: {
   return doc;
 }
 
-export function generateStatementPDF(opts: {
+export async function generateStatementPDF(opts: {
   customer: Customer;
   rows: { date: string; description: string; debit: number; credit: number; balance: number }[];
   currentBalance: number;
-}): jsPDF {
+}): Promise<jsPDF> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
+  const logoDataUrl = await loadLogoDataUrl();
 
-  drawHeader(doc, "STATEMENT", [
+  drawHeader(doc, logoDataUrl, "STATEMENT", [
     { label: "Generated", value: new Date().toLocaleDateString("en-IN") },
     { label: "Account", value: opts.customer.name },
   ]);
