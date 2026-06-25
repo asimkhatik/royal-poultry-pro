@@ -30,12 +30,13 @@ export function CustomerDetailPage({ id }: { id: string }) {
   const totalPurchase = data!.sales.reduce((a, s) => a + Number(s.total_amount), 0);
   const totalPaid = data!.payments.reduce((a, p) => a + Number(p.amount), 0);
 
-  const downloadStatement = () => {
-    generateStatementPDF({
+  const downloadStatement = async () => {
+    const pdf = await generateStatementPDF({
       customer: { name: c.name, phone: c.phone, address: c.address },
       rows,
       currentBalance: Number(c.current_balance),
-    }).save(`statement-${c.name.replace(/\s+/g, "_")}.pdf`);
+    });
+    pdf.save(`statement-${c.name.replace(/\s+/g, "_")}.pdf`);
   };
 
   const exportXLSX = () => {
