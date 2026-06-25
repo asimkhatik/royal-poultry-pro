@@ -62,7 +62,7 @@ function drawLogo(doc: jsPDF, dataUrl: string | null, x: number, y: number, size
   doc.text("RB", x + size / 2, y + size * 0.65, { align: "center" });
 }
 
-function drawHeader(doc: jsPDF, title: string, meta: { label: string; value: string }[]) {
+function drawHeader(doc: jsPDF, logoDataUrl: string | null, title: string, meta: { label: string; value: string }[]) {
   const pageW = doc.internal.pageSize.getWidth();
 
   doc.setFillColor(...NAVY);
@@ -70,7 +70,7 @@ function drawHeader(doc: jsPDF, title: string, meta: { label: string; value: str
   doc.setFillColor(...GOLD);
   doc.rect(0, 110, pageW, 5, "F");
 
-  drawLogo(doc, 40, 30, 50);
+  drawLogo(doc, logoDataUrl, 40, 30, 50);
 
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
