@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { I18nProvider } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
+import { ROYAL_BROILER_LOGO_URL } from "@/components/BrandLogo";
 
 function NotFoundComponent() {
   return (
