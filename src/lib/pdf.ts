@@ -129,11 +129,12 @@ export function generateInvoicePDF(opts: {
   sale: Sale;
   previousBalance: number;
   currentBalance: number;
-}): jsPDF {
+}): Promise<jsPDF> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
+  const logoDataUrl = await loadLogoDataUrl();
 
-  drawHeader(doc, "INVOICE", [
+  drawHeader(doc, logoDataUrl, "INVOICE", [
     { label: "Invoice No", value: `#${opts.invoiceNo}` },
     { label: "Date", value: opts.date },
   ]);
