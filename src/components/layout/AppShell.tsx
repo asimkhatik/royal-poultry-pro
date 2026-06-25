@@ -119,8 +119,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="lg:hidden sticky top-0 z-40 royal-gradient text-primary-foreground border-b border-sidebar-border">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="size-9 rounded-lg gold-gradient flex items-center justify-center">
-              <Crown className="size-4 text-gold-foreground" />
+            <div className="size-10 rounded-xl overflow-hidden ring-1 ring-gold/40 bg-white/5">
+              <BrandLogo className="size-10 object-cover" />
             </div>
             <div>
               <div className="font-display font-bold text-sm tracking-tight">ROYAL BROILER</div>
