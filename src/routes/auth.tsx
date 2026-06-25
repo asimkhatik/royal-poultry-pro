@@ -80,10 +80,10 @@ function AuthPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[oklch(0.18_0.06_265)] text-primary-foreground">
+    <div className="relative min-h-screen overflow-hidden bg-[oklch(0.18_0.05_155)] text-primary-foreground">
       {/* Aurora background */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 -left-32 size-[28rem] rounded-full bg-[oklch(0.45_0.18_265)] opacity-50 blur-3xl" />
+        <div className="absolute -top-32 -left-32 size-[28rem] rounded-full bg-[oklch(0.40_0.10_155)] opacity-50 blur-3xl" />
         <div className="absolute top-1/3 -right-40 size-[32rem] rounded-full bg-[oklch(0.78_0.18_85)] opacity-30 blur-3xl" />
         <div className="absolute -bottom-40 left-1/4 size-[26rem] rounded-full bg-[oklch(0.55_0.20_300)] opacity-25 blur-3xl" />
         <div
