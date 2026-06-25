@@ -63,7 +63,7 @@ export function CustomerDetailPage({ id }: { id: string }) {
     });
   };
 
-  const downloadInvoice = (saleId: string) => {
+  const downloadInvoice = async (saleId: string) => {
     const idx = data!.sales.findIndex((s) => s.id === saleId);
     if (idx < 0) return;
     const sale = data!.sales[idx];
@@ -74,7 +74,7 @@ export function CustomerDetailPage({ id }: { id: string }) {
       if (new Date(p.payment_date) < new Date(sale.sale_date)) prev -= Number(p.amount);
     }
     const current = prev + Number(sale.total_amount);
-    const pdf = generateInvoicePDF({
+    const pdf = await generateInvoicePDF({
       invoiceNo: sale.id.slice(0, 8).toUpperCase(),
       date: fmtDate(sale.sale_date),
       customer: { name: c.name, phone: c.phone, address: c.address },
