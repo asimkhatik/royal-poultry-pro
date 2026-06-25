@@ -122,7 +122,7 @@ function drawFooter(doc: jsPDF) {
   }
 }
 
-export function generateInvoicePDF(opts: {
+export async function generateInvoicePDF(opts: {
   invoiceNo: string;
   date: string;
   customer: Customer;
