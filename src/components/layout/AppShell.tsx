@@ -70,8 +70,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="hidden lg:flex w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
         <div className="p-6 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl gold-gradient flex items-center justify-center shadow-gold">
-              <Crown className="size-5 text-gold-foreground" />
+            <div className="size-12 rounded-2xl overflow-hidden ring-1 ring-gold/40 shadow-gold bg-white/5">
+              <BrandLogo className="size-12 object-cover" />
             </div>
             <div>
               <div className="font-display text-lg font-bold tracking-tight">ROYAL</div>
