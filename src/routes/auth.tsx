@@ -100,26 +100,26 @@ function AuthPage() {
         {/* Brand side */}
         <div className="flex flex-1 items-center px-6 pt-10 pb-4 lg:px-10 lg:py-16">
           <div className="w-full max-w-md mx-auto lg:mx-0">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="size-14 rounded-2xl gold-gradient flex items-center justify-center shadow-gold ring-1 ring-white/20">
-                <Crown className="size-7 text-gold-foreground" />
+            <div className="flex flex-col items-center lg:items-start mb-8">
+              <div className="size-24 rounded-3xl overflow-hidden ring-2 ring-gold/40 shadow-gold bg-white/5 mb-4">
+                <BrandLogo className="size-24 object-cover" />
               </div>
-              <div>
-                <div className="font-display font-bold text-2xl tracking-tight">ROYAL</div>
-                <div className="text-xs text-gold tracking-[0.4em] -mt-0.5">BROILER</div>
+              <div className="text-center lg:text-left">
+                <div className="font-display font-bold text-2xl tracking-tight">ROYAL BROILER</div>
+                <div className="text-xs text-gold tracking-[0.4em] mt-1">MANAGE • GROW • SUCCEED</div>
               </div>
             </div>
 
             <h1 className="font-display text-4xl lg:text-5xl font-bold leading-[1.05] tracking-tight">
-              Run your poultry business
+              Welcome to
               <span className="block bg-gradient-to-r from-[oklch(0.92_0.12_85)] via-[oklch(0.82_0.16_75)] to-[oklch(0.95_0.05_85)] bg-clip-text text-transparent">
-                like royalty.
+                ROYAL BROILER
               </span>
             </h1>
 
             <p className="mt-5 text-base lg:text-lg text-primary-foreground/75 leading-relaxed">
-              Daily sales, customer ledgers, automatic balances and professional
-              invoices — all in one premium cloud workspace.
+              Manage • Grow • Succeed — your complete poultry business workspace
+              for daily sales, customer ledgers, and professional invoices.
             </p>
 
             <ul className="mt-8 space-y-3 text-sm">
