@@ -16,7 +16,8 @@ import {
   Languages,
   Crown,
   UserCircle,
-} from "lucide-react";
+  Bell,
+
 import { useEffect, useState } from "react";
 import {
   DropdownMenu,
