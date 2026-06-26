@@ -108,13 +108,13 @@ export function RemindersPage() {
         return {
           customer_id: c.id,
           reminder_date: today,
-          balance: c.current_balance,
+          balance: Number(c.current_balance),
           whatsapp_number: phone,
           message: msg,
           whatsapp_url: url,
         };
       })
-      .filter(Boolean) as Array<Record<string, unknown>>;
+      .filter((r): r is NonNullable<typeof r> => r !== null);
 
     if (rows.length === 0) {
       setGenerating(false);
