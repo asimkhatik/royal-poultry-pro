@@ -144,6 +144,77 @@ export type Database = {
           },
         ]
       }
+      reminder_logs: {
+        Row: {
+          balance: number
+          created_at: string
+          customer_id: string
+          id: string
+          message: string
+          reminder_date: string
+          sent_at: string | null
+          status: string
+          whatsapp_number: string | null
+          whatsapp_url: string
+        }
+        Insert: {
+          balance: number
+          created_at?: string
+          customer_id: string
+          id?: string
+          message: string
+          reminder_date?: string
+          sent_at?: string | null
+          status?: string
+          whatsapp_number?: string | null
+          whatsapp_url: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          customer_id?: string
+          id?: string
+          message?: string
+          reminder_date?: string
+          sent_at?: string | null
+          status?: string
+          whatsapp_number?: string | null
+          whatsapp_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_logs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reminder_settings: {
+        Row: {
+          enabled: boolean
+          id: boolean
+          message_template: string
+          send_hour: number
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: boolean
+          message_template?: string
+          send_hour?: number
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: boolean
+          message_template?: string
+          send_hour?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sales: {
         Row: {
           created_at: string
@@ -217,6 +288,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_daily_reminders: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

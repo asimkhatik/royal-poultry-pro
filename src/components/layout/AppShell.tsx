@@ -16,6 +16,7 @@ import {
   Languages,
   Crown,
   UserCircle,
+  Bell,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -30,6 +31,7 @@ const adminNav = [
   { to: "/customers", key: "customers", icon: Users },
   { to: "/sales", key: "sales", icon: Receipt },
   { to: "/payments", key: "payments", icon: Wallet },
+  { to: "/reminders", key: "reminders", icon: Bell },
   { to: "/reports", key: "reports", icon: BarChart3 },
 ] as const;
 
