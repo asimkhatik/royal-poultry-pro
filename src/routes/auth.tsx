@@ -110,35 +110,37 @@ function AuthPage() {
               </div>
             </div>
 
-            <h1 className="font-display text-4xl lg:text-5xl font-bold leading-[1.05] tracking-tight">
-              Welcome to
-              <span className="block bg-gradient-to-r from-[oklch(0.92_0.12_85)] via-[oklch(0.82_0.16_75)] to-[oklch(0.95_0.05_85)] bg-clip-text text-transparent">
-                ROYAL BROILER
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.5rem] font-bold leading-[1.08] tracking-tight">
+              Every Bird Counted.
+              <span className="block bg-gradient-to-r from-[oklch(0.92_0.12_85)] via-[oklch(0.82_0.16_75)] to-[oklch(0.95_0.05_85)] bg-clip-text text-transparent mt-1">
+                Every Rupee Tracked.
               </span>
             </h1>
 
-            <p className="mt-5 text-base lg:text-lg text-primary-foreground/75 leading-relaxed">
-              Manage • Grow • Succeed — your complete poultry business workspace
-              for daily sales, customer ledgers, and professional invoices.
+            <p className="mt-5 text-base lg:text-lg text-primary-foreground/80 leading-relaxed max-w-md">
+              Manage sales, customer ledgers, payments, invoices and outstanding balances from one powerful platform.
             </p>
 
             <ul className="mt-8 space-y-3 text-sm">
               {[
-                { icon: Sparkles, text: "Auto-calculated balances on every sale & payment" },
-                { icon: ShieldCheck, text: "Bank-grade security with role-based access" },
-                { icon: Crown, text: "Premium PDF invoices & WhatsApp sharing" },
-              ].map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-start gap-3 text-primary-foreground/85">
-                  <span className="mt-0.5 grid size-7 place-items-center rounded-lg bg-white/10 ring-1 ring-white/15 backdrop-blur">
-                    <Icon className="size-3.5 text-gold" />
-                  </span>
+                "Smart Poultry Management",
+                "Accurate Customer Ledgers",
+                "Secure Payments & Records",
+                "Professional Invoices",
+              ].map((text) => (
+                <li key={text} className="flex items-center gap-3 text-primary-foreground/85">
+                  <span className="grid size-5 place-items-center rounded-full bg-gold/20 ring-1 ring-gold/30 text-gold text-xs font-bold">✓</span>
                   {text}
                 </li>
               ))}
             </ul>
 
-            <p className="mt-10 hidden lg:block text-xs text-primary-foreground/50">
-              Stay signed in across all your devices — securely.
+            <div className="mt-8">
+              <p className="text-xs uppercase tracking-[0.25em] text-gold font-semibold">Farm Strong. Grow Royal.</p>
+            </div>
+
+            <p className="mt-6 text-xs text-primary-foreground/50 max-w-xs">
+              Trusted by poultry businesses. Built for growth.
             </p>
           </div>
         </div>
