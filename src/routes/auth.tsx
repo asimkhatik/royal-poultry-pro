@@ -168,9 +168,9 @@ function AuthPage() {
               ) : (
                 <Tabs defaultValue="signin">
                   <div className="mb-5">
-                    <h2 className="font-display text-2xl font-bold">Welcome</h2>
+                    <h2 className="font-display text-2xl font-bold">Welcome to ROYAL BROILER</h2>
                     <p className="mt-1 text-sm text-primary-foreground/70">
-                      Sign in or create your ROYAL BROILER account.
+                      Your Growth. Our Commitment.
                     </p>
                   </div>
                   <TabsList className="w-full grid grid-cols-2 bg-white/10 ring-1 ring-white/15 backdrop-blur">
