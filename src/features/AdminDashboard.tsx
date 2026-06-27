@@ -121,6 +121,29 @@ export function AdminDashboard() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <StatCard label={t("totalCustomers")} value={Number(data?.totalCustomers ?? 0)} format="count" tone="customers" icon={Users} />
         <StatCard label={t("totalPaid")} value={Number(data?.totalPaid ?? 0)} format="currency" tone="paid" icon={Wallet} />
+        <Card className="col-span-2 lg:col-span-2">
+          <CardContent className="p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${data?.reminderEnabled ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>
+                {data?.reminderEnabled ? <Bell className="size-5" /> : <BellOff className="size-5" />}
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-[0.12em]">
+                  Daily reminders
+                </div>
+                <div className="text-sm font-semibold truncate">
+                  {data?.reminderEnabled ? `On · ${String(data.reminderHour).padStart(2, "0")}:00 IST` : "Off"}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Today: {data?.remindersSentToday ?? 0} sent / {data?.remindersToday ?? 0} generated
+                </div>
+              </div>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/reminders">Manage</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
