@@ -93,6 +93,10 @@ export function AdminDashboard() {
         recentPayments: recentPayments.data ?? [],
         topOutstanding: topOutstanding.data ?? [],
         trend,
+        reminderEnabled: Boolean(settings.data?.enabled),
+        reminderHour: Number(settings.data?.send_hour ?? 9),
+        remindersToday: (todayReminders.data ?? []).length,
+        remindersSentToday: (todayReminders.data ?? []).filter((r) => r.sent_at).length,
       };
     },
   });
