@@ -33,7 +33,7 @@ export function AdminDashboard() {
       since.setDate(since.getDate() - 13);
       const sinceISO = since.toISOString().slice(0, 10);
 
-      const [salesToday, salesAll, customers, payments, recentSales, recentPayments, topOutstanding, salesRange] =
+      const [salesToday, salesAll, customers, payments, recentSales, recentPayments, topOutstanding, salesRange, settings, todayReminders] =
         await Promise.all([
           supabase.from("sales").select("weight_kg,total_amount").eq("sale_date", today),
           supabase.from("sales").select("total_amount"),
