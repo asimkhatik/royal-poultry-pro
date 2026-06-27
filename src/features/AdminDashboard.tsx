@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Crown, Receipt, Scale, TrendingUp, Wallet, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Bell, BellOff, Crown, Receipt, Scale, TrendingUp, Wallet, Users } from "lucide-react";
 import { inr, kg, fmtDate, todayISO } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { StatCard } from "@/components/StatCard";
@@ -31,7 +33,7 @@ export function AdminDashboard() {
       since.setDate(since.getDate() - 13);
       const sinceISO = since.toISOString().slice(0, 10);
 
-      const [salesToday, salesAll, customers, payments, recentSales, recentPayments, topOutstanding, salesRange] =
+      const [salesToday, salesAll, customers, payments, recentSales, recentPayments, topOutstanding, salesRange, settings, todayReminders] =
         await Promise.all([
           supabase.from("sales").select("weight_kg,total_amount").eq("sale_date", today),
           supabase.from("sales").select("total_amount"),
@@ -54,6 +56,8 @@ export function AdminDashboard() {
             .order("current_balance", { ascending: false })
             .limit(5),
           supabase.from("sales").select("sale_date,total_amount").gte("sale_date", sinceISO),
+          supabase.from("reminder_settings").select("enabled,send_hour").eq("id", true).maybeSingle(),
+          supabase.from("reminder_logs").select("id,sent_at").eq("reminder_date", today),
         ]);
 
       const todayWeight = (salesToday.data ?? []).reduce((a, r) => a + Number(r.weight_kg), 0);
