@@ -56,6 +56,8 @@ export function AdminDashboard() {
             .order("current_balance", { ascending: false })
             .limit(5),
           supabase.from("sales").select("sale_date,total_amount").gte("sale_date", sinceISO),
+          supabase.from("reminder_settings").select("enabled,send_hour").eq("id", true).maybeSingle(),
+          supabase.from("reminder_logs").select("id,sent_at").eq("reminder_date", today),
         ]);
 
       const todayWeight = (salesToday.data ?? []).reduce((a, r) => a + Number(r.weight_kg), 0);
