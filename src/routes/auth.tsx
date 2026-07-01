@@ -80,144 +80,113 @@ function AuthPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[oklch(0.18_0.05_155)] text-primary-foreground">
-      {/* Aurora background */}
+    <div className="relative min-h-screen overflow-hidden bg-[#0B1A14] text-primary-foreground">
+      {/* Soft ambient glows */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 -left-32 size-[28rem] rounded-full bg-[oklch(0.40_0.10_155)] opacity-50 blur-3xl" />
-        <div className="absolute top-1/3 -right-40 size-[32rem] rounded-full bg-[oklch(0.78_0.18_85)] opacity-30 blur-3xl" />
-        <div className="absolute -bottom-40 left-1/4 size-[26rem] rounded-full bg-[oklch(0.55_0.20_300)] opacity-25 blur-3xl" />
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 size-[28rem] rounded-full bg-[oklch(0.55_0.12_155)] opacity-30 blur-3xl" />
+        <div className="absolute top-1/3 -right-24 size-[22rem] rounded-full bg-[oklch(0.78_0.16_85)] opacity-20 blur-3xl" />
+        <div className="absolute -bottom-24 left-1/4 size-[20rem] rounded-full bg-[oklch(0.40_0.10_155)] opacity-25 blur-3xl" />
         <div
-          className="absolute inset-0 opacity-[0.06]"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage:
               "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-            backgroundSize: "28px 28px",
+            backgroundSize: "32px 32px",
           }}
         />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col lg:flex-row">
-        {/* Brand side */}
-        <div className="flex flex-1 items-center px-6 pt-10 pb-4 lg:px-10 lg:py-16">
-          <div className="w-full max-w-md mx-auto lg:mx-0">
-            <div className="flex flex-col items-center lg:items-start mb-8">
-              <div className="size-24 rounded-3xl overflow-hidden ring-2 ring-gold/40 shadow-gold bg-white/5 mb-4">
-                <BrandLogo className="size-24 object-cover" />
-              </div>
-              <div className="text-center lg:text-left">
-                <div className="font-display font-bold text-2xl tracking-tight">ROYAL BROILER</div>
-                <div className="text-xs text-gold tracking-[0.4em] mt-1">MANAGE • GROW • SUCCEED</div>
-              </div>
+      <div className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-12">
+        {/* Brand lockup */}
+        <div className="flex flex-col items-center text-center">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 rounded-3xl bg-gold/20 blur-xl" />
+            <div className="relative size-20 rounded-2xl overflow-hidden ring-1 ring-gold/40 shadow-gold bg-[#0F2E24]">
+              <BrandLogo className="size-20 object-cover" />
             </div>
+          </div>
 
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[3.5rem] font-bold leading-[1.08] tracking-tight">
-              Every Bird Counted.
-              <span className="block bg-gradient-to-r from-[oklch(0.92_0.12_85)] via-[oklch(0.82_0.16_75)] to-[oklch(0.95_0.05_85)] bg-clip-text text-transparent mt-1">
-                Every Rupee Tracked.
-              </span>
-            </h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight">ROYAL BROILER</h1>
+          <p className="mt-1 text-sm text-gold tracking-[0.3em] uppercase font-medium">Manage • Grow • Succeed</p>
 
-            <p className="mt-5 text-base lg:text-lg text-primary-foreground/80 leading-relaxed max-w-md">
-              Manage sales, customer ledgers, payments, invoices and outstanding balances from one powerful platform.
-            </p>
+          <p className="mt-6 text-2xl sm:text-3xl font-semibold leading-snug tracking-tight">
+            Every Bird Counted.
+            <span className="block text-gold mt-0.5">Every Rupee Tracked.</span>
+          </p>
 
-            <ul className="mt-8 space-y-3 text-sm">
-              {[
-                "Smart Poultry Management",
-                "Accurate Customer Ledgers",
-                "Secure Payments & Records",
-                "Professional Invoices",
-              ].map((text) => (
-                <li key={text} className="flex items-center gap-3 text-primary-foreground/85">
-                  <span className="grid size-5 place-items-center rounded-full bg-gold/20 ring-1 ring-gold/30 text-gold text-xs font-bold">✓</span>
-                  {text}
-                </li>
-              ))}
-            </ul>
+          <p className="mt-3 text-sm text-primary-foreground/60 max-w-xs leading-relaxed">
+            Smart poultry business management for modern broiler farms.
+          </p>
+        </div>
 
-            <div className="mt-8">
-              <p className="text-xs uppercase tracking-[0.25em] text-gold font-semibold">Farm Strong. Grow Royal.</p>
-            </div>
+        {/* Glass card */}
+        <div className="w-full mt-10">
+          <div className="rounded-3xl bg-white/[0.07] p-6 sm:p-8 ring-1 ring-white/15 shadow-[0_24px_64px_-20px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
+            {showReset ? (
+              <form onSubmit={onReset} className="space-y-5">
+                <div>
+                  <h2 className="font-display text-xl font-bold">Reset password</h2>
+                  <p className="mt-1 text-sm text-primary-foreground/60">
+                    We’ll email you a secure link.
+                  </p>
+                </div>
+                <GlassField id="re" label="Email" icon={Mail} type="email" required value={resetEmail} onChange={(v) => setResetEmail(v)} placeholder="you@example.com" />
+                <Button type="submit" disabled={busy} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
+                  Send reset link
+                </Button>
+                <button type="button" onClick={() => setShowReset(false)} className="block w-full text-center text-sm text-primary-foreground/60 hover:text-primary-foreground transition-colors">
+                  Back to sign in
+                </button>
+              </form>
+            ) : (
+              <Tabs defaultValue="signin">
+                <div className="mb-6 text-center">
+                  <h2 className="font-display text-xl font-bold">Welcome</h2>
+                  <p className="mt-1 text-sm text-primary-foreground/60">
+                    Sign in to continue
+                  </p>
+                </div>
+                <TabsList className="w-full grid grid-cols-2 bg-white/[0.06] ring-1 ring-white/10 backdrop-blur rounded-xl">
+                  <TabsTrigger value="signin" className="data-[state=active]:bg-white/[0.10] data-[state=active]:text-primary-foreground data-[state=active]:shadow-none text-primary-foreground/60 rounded-lg">
+                    Sign in
+                  </TabsTrigger>
+                  <TabsTrigger value="signup" className="data-[state=active]:bg-white/[0.10] data-[state=active]:text-primary-foreground data-[state=active]:shadow-none text-primary-foreground/60 rounded-lg">
+                    Sign up
+                  </TabsTrigger>
+                </TabsList>
 
-            <p className="mt-6 text-xs text-primary-foreground/50 max-w-xs">
-              Trusted by poultry businesses. Built for growth.
-            </p>
+                <TabsContent value="signin">
+                  <form onSubmit={onSignIn} className="space-y-4 mt-6">
+                    <GlassField id="si-email" label="Email" icon={Mail} type="email" required value={signInEmail} onChange={setSignInEmail} placeholder="you@example.com" />
+                    <GlassField id="si-pwd" label="Password" icon={Lock} type="password" required value={signInPwd} onChange={setSignInPwd} placeholder="••••••••" />
+                    <Button type="submit" disabled={busy} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
+                      {busy ? "Signing in..." : "Sign in"}
+                    </Button>
+                    <button type="button" onClick={() => setShowReset(true)} className="block w-full text-center text-sm text-primary-foreground/60 hover:text-gold transition-colors">
+                      Forgot password?
+                    </button>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="signup">
+                  <form onSubmit={onSignUp} className="space-y-4 mt-6">
+                    <GlassField id="su-name" label="Full name" icon={User} required value={name} onChange={setName} placeholder="Your name" />
+                    <GlassField id="su-phone" label="Mobile number" icon={Phone} required value={phone} onChange={setPhone} placeholder="+91 9xxxxxxxxx" />
+                    <GlassField id="su-email" label="Email" icon={Mail} type="email" required value={suEmail} onChange={setSuEmail} placeholder="you@example.com" />
+                    <GlassField id="su-pwd" label="Password" icon={Lock} type="password" required minLength={6} value={suPwd} onChange={setSuPwd} placeholder="At least 6 characters" />
+                    <Button type="submit" disabled={busy} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
+                      {busy ? "Creating account..." : "Create account"}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
+            )}
           </div>
         </div>
 
-        {/* Form side — glass card */}
-        <div className="flex flex-1 items-center justify-center px-4 pb-10 pt-2 lg:px-10 lg:py-16">
-          <div className="w-full max-w-md">
-            <div className="rounded-3xl bg-white/10 p-6 sm:p-8 ring-1 ring-white/20 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] backdrop-blur-2xl">
-              {showReset ? (
-                <form onSubmit={onReset} className="space-y-5">
-                  <div>
-                    <h2 className="font-display text-2xl font-bold">Reset password</h2>
-                    <p className="mt-1 text-sm text-primary-foreground/70">
-                      We'll email you a secure link.
-                    </p>
-                  </div>
-                  <GlassField id="re" label="Email" icon={Mail} type="email" required value={resetEmail} onChange={(v) => setResetEmail(v)} placeholder="you@example.com" />
-                  <Button type="submit" disabled={busy} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
-                    Send reset link
-                  </Button>
-                  <button type="button" onClick={() => setShowReset(false)} className="block w-full text-center text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors">
-                    Back to sign in
-                  </button>
-                </form>
-              ) : (
-                <Tabs defaultValue="signin">
-                  <div className="mb-5">
-                    <h2 className="font-display text-2xl font-bold">Welcome to ROYAL BROILER</h2>
-                    <p className="mt-1 text-sm text-primary-foreground/70">
-                      Your Growth. Our Commitment.
-                    </p>
-                  </div>
-                  <TabsList className="w-full grid grid-cols-2 bg-white/10 ring-1 ring-white/15 backdrop-blur">
-                    <TabsTrigger value="signin" className="data-[state=active]:bg-white/15 data-[state=active]:text-primary-foreground data-[state=active]:shadow-none text-primary-foreground/70">
-                      Sign in
-                    </TabsTrigger>
-                    <TabsTrigger value="signup" className="data-[state=active]:bg-white/15 data-[state=active]:text-primary-foreground data-[state=active]:shadow-none text-primary-foreground/70">
-                      Sign up
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="signin">
-                    <form onSubmit={onSignIn} className="space-y-4 mt-5">
-                      <GlassField id="si-email" label="Email" icon={Mail} type="email" required value={signInEmail} onChange={setSignInEmail} placeholder="you@example.com" />
-                      <GlassField id="si-pwd" label="Password" icon={Lock} type="password" required value={signInPwd} onChange={setSignInPwd} placeholder="••••••••" />
-                      <Button type="submit" disabled={busy} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
-                        {busy ? "Signing in..." : "Sign in"}
-                      </Button>
-                      <button type="button" onClick={() => setShowReset(true)} className="block w-full text-center text-sm text-primary-foreground/70 hover:text-gold transition-colors">
-                        Forgot password?
-                      </button>
-                      <p className="text-center text-xs text-primary-foreground/50 pt-1">
-                        You'll stay signed in on this device.
-                      </p>
-                    </form>
-                  </TabsContent>
-
-                  <TabsContent value="signup">
-                    <form onSubmit={onSignUp} className="space-y-4 mt-5">
-                      <GlassField id="su-name" label="Full name" icon={User} required value={name} onChange={setName} placeholder="Your name" />
-                      <GlassField id="su-phone" label="Mobile number" icon={Phone} required value={phone} onChange={setPhone} placeholder="+91 9xxxxxxxxx" />
-                      <GlassField id="su-email" label="Email" icon={Mail} type="email" required value={suEmail} onChange={setSuEmail} placeholder="you@example.com" />
-                      <GlassField id="su-pwd" label="Password" icon={Lock} type="password" required minLength={6} value={suPwd} onChange={setSuPwd} placeholder="At least 6 characters" />
-                      <Button type="submit" disabled={busy} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
-                        {busy ? "Creating account..." : "Create account"}
-                      </Button>
-                    </form>
-                  </TabsContent>
-                </Tabs>
-              )}
-            </div>
-
-            <p className="mt-5 text-center text-xs text-primary-foreground/55">
-              By continuing, you agree to ROYAL BROILER's terms & privacy policy.
-            </p>
-          </div>
-        </div>
+        <p className="mt-8 text-center text-xs text-primary-foreground/40">
+          Trusted by poultry businesses. Built for growth.
+        </p>
       </div>
     </div>
   );
@@ -238,9 +207,9 @@ function GlassField({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-primary-foreground/85 text-xs uppercase tracking-wider">{label}</Label>
+      <Label htmlFor={id} className="text-primary-foreground/70 text-xs uppercase tracking-wider font-medium">{label}</Label>
       <div className="relative">
-        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-primary-foreground/50" />
+        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-primary-foreground/40" />
         <Input
           id={id}
           type={type}
@@ -249,7 +218,7 @@ function GlassField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="h-11 pl-10 bg-white/10 border-white/15 text-primary-foreground placeholder:text-primary-foreground/40 focus-visible:ring-gold focus-visible:border-gold/50 backdrop-blur"
+          className="h-11 pl-10 bg-white/[0.06] border-white/10 text-primary-foreground placeholder:text-primary-foreground/35 focus-visible:ring-gold focus-visible:border-gold/50 backdrop-blur rounded-xl transition-colors"
         />
       </div>
     </div>
