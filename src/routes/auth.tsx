@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Mail, Lock, Phone, User } from "lucide-react";
+import { AtSign, Mail, Lock, Phone, User } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { resolveLoginIdentifier } from "@/lib/auth-resolve.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -31,7 +33,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [showReset, setShowReset] = useState(false);
 
-  const [signInEmail, setSignInEmail] = useState("");
+  const [signInId, setSignInId] = useState("");
   const [signInPwd, setSignInPwd] = useState("");
 
   const [name, setName] = useState("");
@@ -41,14 +43,22 @@ function AuthPage() {
 
   const [resetEmail, setResetEmail] = useState("");
 
+  const resolveIdentifier = useServerFn(resolveLoginIdentifier);
+
   const onSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: signInEmail, password: signInPwd });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Welcome back!");
-    navigate({ to: "/", replace: true });
+    try {
+      const { email } = await resolveIdentifier({ data: { identifier: signInId } });
+      const { error } = await supabase.auth.signInWithPassword({ email, password: signInPwd });
+      if (error) throw error;
+      toast.success("Welcome back!");
+      navigate({ to: "/", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Sign in failed");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const onSignUp = async (e: React.FormEvent) => {
@@ -157,8 +167,8 @@ function AuthPage() {
 
                 <TabsContent value="signin">
                   <form onSubmit={onSignIn} className="space-y-4 mt-6">
-                    <GlassField id="si-email" label="Email" icon={Mail} type="email" required value={signInEmail} onChange={setSignInEmail} placeholder="you@example.com" />
-                    <GlassField id="si-pwd" label="Password" icon={Lock} type="password" required value={signInPwd} onChange={setSignInPwd} placeholder="••••••••" />
+                    <GlassField id="si-id" label="Email or mobile number" icon={AtSign} type="text" required value={signInId} onChange={setSignInId} placeholder="you@example.com or 9xxxxxxxxx" autoComplete="username" />
+                    <GlassField id="si-pwd" label="Password" icon={Lock} type="password" required value={signInPwd} onChange={setSignInPwd} placeholder="••••••••" autoComplete="current-password" />
                     <Button type="submit" disabled={busy} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
                       {busy ? "Signing in..." : "Sign in"}
                     </Button>
@@ -193,7 +203,7 @@ function AuthPage() {
 }
 
 function GlassField({
-  id, label, icon: Icon, type = "text", required, minLength, value, onChange, placeholder,
+  id, label, icon: Icon, type = "text", required, minLength, value, onChange, placeholder, autoComplete,
 }: {
   id: string;
   label: string;
@@ -204,6 +214,7 @@ function GlassField({
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  autoComplete?: string;
 }) {
   return (
     <div className="space-y-1.5">
@@ -218,6 +229,7 @@ function GlassField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          autoComplete={autoComplete}
           className="h-11 pl-10 bg-white/[0.06] border-white/10 text-primary-foreground placeholder:text-primary-foreground/35 focus-visible:ring-gold focus-visible:border-gold/50 backdrop-blur rounded-xl transition-colors"
         />
       </div>
