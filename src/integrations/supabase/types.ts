@@ -289,13 +289,6 @@ export type Database = {
     }
     Functions: {
       generate_daily_reminders: { Args: never; Returns: number }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
     }
     Enums: {
       app_role: "admin" | "customer"
