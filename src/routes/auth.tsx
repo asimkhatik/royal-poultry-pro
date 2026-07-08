@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { resolveLoginIdentifier } from "@/lib/auth-resolve.functions";
+import { signInWithIdentifier } from "@/lib/auth-resolve.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -43,19 +43,21 @@ function AuthPage() {
 
   const [resetEmail, setResetEmail] = useState("");
 
-  const resolveIdentifier = useServerFn(resolveLoginIdentifier);
+  const signInFn = useServerFn(signInWithIdentifier);
 
   const onSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
-      const { email } = await resolveIdentifier({ data: { identifier: signInId } });
-      const { error } = await supabase.auth.signInWithPassword({ email, password: signInPwd });
+      const { access_token, refresh_token } = await signInFn({
+        data: { identifier: signInId, password: signInPwd },
+      });
+      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
       if (error) throw error;
       toast.success("Welcome back!");
       navigate({ to: "/", replace: true });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Sign in failed");
+    } catch {
+      toast.error("Invalid credentials");
     } finally {
       setBusy(false);
     }
