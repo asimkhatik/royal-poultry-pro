@@ -48,6 +48,32 @@ function AuthPage() {
 
   const [resetEmail, setResetEmail] = useState("");
 
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioEnabled, setBioEnabled] = useState(false);
+  const [bioLabel, setBioLabel] = useState("Fingerprint");
+
+  useEffect(() => {
+    (async () => {
+      const info = await biometricAvailable();
+      setBioAvailable(info.available);
+      setBioLabel(info.label);
+      setBioEnabled(await isBiometricEnabled());
+    })();
+  }, []);
+
+  const onBiometricLogin = async () => {
+    setBusy(true);
+    try {
+      await loginWithBiometric();
+      toast.success("Authentication Successful. Welcome back!");
+      navigate({ to: "/", replace: true });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Biometric login failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const signInFn = useServerFn(signInWithIdentifier);
 
   const onSignIn = async (e: React.FormEvent) => {
