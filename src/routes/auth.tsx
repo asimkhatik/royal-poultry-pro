@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AtSign, Mail, Lock, Phone, User } from "lucide-react";
+import { AtSign, Mail, Lock, Phone, User, Fingerprint } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -11,6 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { signInWithIdentifier } from "@/lib/auth-resolve.functions";
+import {
+  biometricAvailable,
+  isBiometricEnabled,
+  loginWithBiometric,
+} from "@/lib/biometric";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
