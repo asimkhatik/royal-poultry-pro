@@ -1,13 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, FileText, Share2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Download, ChevronLeft, FileText, Share2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { inr, inrShort, kg, fmtDate } from "@/lib/format";
 import { buildLedger, LedgerTable } from "@/components/LedgerTable";
 import { generateInvoicePDF, generateStatementPDF } from "@/lib/pdf";
 import { exportToExcel } from "@/lib/excel";
+import { deleteCustomerCompletely } from "@/lib/admin-customers.functions";
 
 export function CustomerDetailPage({ id }: { id: string }) {
   const { data, isLoading } = useQuery({
