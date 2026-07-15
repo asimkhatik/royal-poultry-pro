@@ -275,6 +275,26 @@ function AuthPage() {
           Trusted by poultry businesses. Built for growth.
         </p>
       </div>
+
+      <AlertDialog open={showBioPrompt} onOpenChange={setShowBioPrompt}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Fingerprint className="size-5 text-gold" />
+              Enable Biometric Login?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Sign in faster next time using {bioLabel}. Your password is never stored on the device.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setShowBioPrompt(false); navigate({ to: "/", replace: true }); }}>
+              Not Now
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={onEnableBioPrompt}>Enable</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
