@@ -13,7 +13,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { signInWithIdentifier } from "@/lib/auth-resolve.functions";
 import {
   biometricAvailable,
+  enableBiometric,
   isBiometricEnabled,
+  isNative,
   loginWithBiometric,
 } from "@/lib/biometric";
 
