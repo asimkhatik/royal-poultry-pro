@@ -70,7 +70,7 @@ export async function loginWithBiometric(): Promise<void> {
     androidTitle: "Login with Biometric",
     androidSubtitle: "Confirm your identity",
     allowDeviceCredential: false,
-    maxAttempts: 3,
+    
   });
   const { value } = await Preferences.get({ key: TOKEN_KEY });
   if (!value) throw new Error("No stored session — please sign in with password first");
