@@ -148,15 +148,49 @@ Thank you for your business!`,
             {c.phone || "—"} · {c.address || "No address"}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={exportXLSX}>
             <FileText className="size-4 mr-2" /> Excel
           </Button>
           <Button onClick={downloadStatement}>
             <Download className="size-4 mr-2" /> Statement
           </Button>
+          <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
+            <Trash2 className="size-4 mr-2" /> Delete Customer
+          </Button>
         </div>
       </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Customer?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will permanently delete <span className="font-semibold text-foreground">{c.name}</span> and
+              all related data (sales, payments, ledger, invoices, reminders, login account). This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reason (optional)</label>
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Why is this customer being deleted?"
+              rows={2}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={del.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); del.mutate(); }}
+              disabled={del.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {del.isPending ? "Deleting…" : "Delete Permanently"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="grid grid-cols-3 gap-4">
        <Stat label="Outstanding" value={inrShort(c.current_balance)} tone={Number(c.current_balance) > 0 ? "danger" : "success"} />
