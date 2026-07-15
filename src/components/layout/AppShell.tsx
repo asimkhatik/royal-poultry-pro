@@ -17,6 +17,7 @@ import {
   Crown,
   UserCircle,
   Bell,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -33,10 +34,12 @@ const adminNav = [
   { to: "/payments", key: "payments", icon: Wallet },
   { to: "/reminders", key: "reminders", icon: Bell },
   { to: "/reports", key: "reports", icon: BarChart3 },
+  { to: "/settings", key: "settings", icon: SettingsIcon },
 ] as const;
 
 const customerNav = [
   { to: "/", key: "myAccount", icon: UserCircle },
+  { to: "/settings", key: "settings", icon: SettingsIcon },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {

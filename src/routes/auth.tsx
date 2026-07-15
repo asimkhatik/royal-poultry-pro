@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AtSign, Mail, Lock, Phone, User } from "lucide-react";
+import { AtSign, Mail, Lock, Phone, User, Fingerprint } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -11,6 +11,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { signInWithIdentifier } from "@/lib/auth-resolve.functions";
+import {
+  biometricAvailable,
+  enableBiometric,
+  isBiometricEnabled,
+  isNative,
+  loginWithBiometric,
+} from "@/lib/biometric";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -43,7 +60,43 @@ function AuthPage() {
 
   const [resetEmail, setResetEmail] = useState("");
 
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [bioEnabled, setBioEnabled] = useState(false);
+  const [bioLabel, setBioLabel] = useState("Fingerprint");
+
+  useEffect(() => {
+    (async () => {
+      const info = await biometricAvailable();
+      setBioAvailable(info.available);
+      setBioLabel(info.label);
+      setBioEnabled(await isBiometricEnabled());
+    })();
+  }, []);
+
+  const onBiometricLogin = async () => {
+    setBusy(true);
+    try {
+      await loginWithBiometric();
+      toast.success("Authentication Successful. Welcome back!");
+      navigate({ to: "/", replace: true });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Biometric login failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const signInFn = useServerFn(signInWithIdentifier);
+
+  const [showBioPrompt, setShowBioPrompt] = useState(false);
+
+  const finishSignIn = async () => {
+    if (isNative() && bioAvailable && !bioEnabled) {
+      setShowBioPrompt(true);
+      return;
+    }
+    navigate({ to: "/", replace: true });
+  };
 
   const onSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,11 +108,24 @@ function AuthPage() {
       const { error } = await supabase.auth.setSession({ access_token, refresh_token });
       if (error) throw error;
       toast.success("Welcome back!");
-      navigate({ to: "/", replace: true });
+      await finishSignIn();
     } catch {
       toast.error("Invalid credentials");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const onEnableBioPrompt = async () => {
+    try {
+      await enableBiometric();
+      setBioEnabled(true);
+      toast.success(`${bioLabel} login enabled`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to enable");
+    } finally {
+      setShowBioPrompt(false);
+      navigate({ to: "/", replace: true });
     }
   };
 
@@ -178,6 +244,25 @@ function AuthPage() {
                       Forgot password?
                     </button>
                   </form>
+
+                  {bioAvailable && bioEnabled && (
+                    <div className="mt-6 pt-6 border-t border-white/10 flex flex-col items-center">
+                      <button
+                        type="button"
+                        onClick={onBiometricLogin}
+                        disabled={busy}
+                        className="group flex flex-col items-center gap-2 focus:outline-none disabled:opacity-50"
+                      >
+                        <span className="relative flex size-20 items-center justify-center rounded-full bg-gold/10 ring-2 ring-gold/40 transition-all group-hover:bg-gold/20 group-active:scale-95">
+                          <span className="absolute inset-0 rounded-full bg-gold/20 blur-lg animate-pulse" />
+                          <Fingerprint className="relative size-10 text-gold" />
+                        </span>
+                        <span className="text-sm font-medium text-primary-foreground/80">
+                          Tap to Login with {bioLabel}
+                        </span>
+                      </button>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="signup">
@@ -200,6 +285,26 @@ function AuthPage() {
           Trusted by poultry businesses. Built for growth.
         </p>
       </div>
+
+      <AlertDialog open={showBioPrompt} onOpenChange={setShowBioPrompt}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Fingerprint className="size-5 text-gold" />
+              Enable Biometric Login?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Sign in faster next time using {bioLabel}. Your password is never stored on the device.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setShowBioPrompt(false); navigate({ to: "/", replace: true }); }}>
+              Not Now
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={onEnableBioPrompt}>Enable</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
