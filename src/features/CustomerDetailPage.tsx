@@ -1,15 +1,30 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ChevronLeft, FileText, Share2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Download, ChevronLeft, FileText, Share2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { inr, inrShort, kg, fmtDate } from "@/lib/format";
 import { buildLedger, LedgerTable } from "@/components/LedgerTable";
 import { generateInvoicePDF, generateStatementPDF } from "@/lib/pdf";
 import { exportToExcel } from "@/lib/excel";
+import { deleteCustomerCompletely } from "@/lib/admin-customers.functions";
 
 export function CustomerDetailPage({ id }: { id: string }) {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const deleteFn = useServerFn(deleteCustomerCompletely);
+
   const { data, isLoading } = useQuery({
     queryKey: ["customer-detail", id],
     queryFn: async () => {
@@ -20,6 +35,18 @@ export function CustomerDetailPage({ id }: { id: string }) {
       ]);
       return { customer, sales: sales ?? [], payments: payments ?? [] };
     },
+  });
+
+  const del = useMutation({
+    mutationFn: () => deleteFn({ data: { customerId: id, reason: reason || undefined } }),
+    onSuccess: () => {
+      toast.success("Customer and all associated records have been deleted successfully.");
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
+      setConfirmOpen(false);
+      navigate({ to: "/customers" });
+    },
+    onError: (e: Error) => toast.error(e.message || "Failed to delete customer"),
   });
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
@@ -121,15 +148,49 @@ Thank you for your business!`,
             {c.phone || "—"} · {c.address || "No address"}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={exportXLSX}>
             <FileText className="size-4 mr-2" /> Excel
           </Button>
           <Button onClick={downloadStatement}>
             <Download className="size-4 mr-2" /> Statement
           </Button>
+          <Button variant="destructive" onClick={() => setConfirmOpen(true)}>
+            <Trash2 className="size-4 mr-2" /> Delete Customer
+          </Button>
         </div>
       </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Customer?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will permanently delete <span className="font-semibold text-foreground">{c.name}</span> and
+              all related data (sales, payments, ledger, invoices, reminders, login account). This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reason (optional)</label>
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Why is this customer being deleted?"
+              rows={2}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={del.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); del.mutate(); }}
+              disabled={del.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {del.isPending ? "Deleting…" : "Delete Permanently"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="grid grid-cols-3 gap-4">
        <Stat label="Outstanding" value={inrShort(c.current_balance)} tone={Number(c.current_balance) > 0 ? "danger" : "success"} />
