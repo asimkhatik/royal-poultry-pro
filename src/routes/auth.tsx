@@ -209,6 +209,25 @@ function AuthPage() {
                       Forgot password?
                     </button>
                   </form>
+
+                  {bioAvailable && bioEnabled && (
+                    <div className="mt-6 pt-6 border-t border-white/10 flex flex-col items-center">
+                      <button
+                        type="button"
+                        onClick={onBiometricLogin}
+                        disabled={busy}
+                        className="group flex flex-col items-center gap-2 focus:outline-none disabled:opacity-50"
+                      >
+                        <span className="relative flex size-20 items-center justify-center rounded-full bg-gold/10 ring-2 ring-gold/40 transition-all group-hover:bg-gold/20 group-active:scale-95">
+                          <span className="absolute inset-0 rounded-full bg-gold/20 blur-lg animate-pulse" />
+                          <Fingerprint className="relative size-10 text-gold" />
+                        </span>
+                        <span className="text-sm font-medium text-primary-foreground/80">
+                          Tap to Login with {bioLabel}
+                        </span>
+                      </button>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="signup">
