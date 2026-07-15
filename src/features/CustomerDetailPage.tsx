@@ -19,6 +19,12 @@ import { exportToExcel } from "@/lib/excel";
 import { deleteCustomerCompletely } from "@/lib/admin-customers.functions";
 
 export function CustomerDetailPage({ id }: { id: string }) {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const deleteFn = useServerFn(deleteCustomerCompletely);
+
   const { data, isLoading } = useQuery({
     queryKey: ["customer-detail", id],
     queryFn: async () => {
@@ -29,6 +35,18 @@ export function CustomerDetailPage({ id }: { id: string }) {
       ]);
       return { customer, sales: sales ?? [], payments: payments ?? [] };
     },
+  });
+
+  const del = useMutation({
+    mutationFn: () => deleteFn({ data: { customerId: id, reason: reason || undefined } }),
+    onSuccess: () => {
+      toast.success("Customer and all associated records have been deleted successfully.");
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
+      setConfirmOpen(false);
+      navigate({ to: "/customers" });
+    },
+    onError: (e: Error) => toast.error(e.message || "Failed to delete customer"),
   });
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
