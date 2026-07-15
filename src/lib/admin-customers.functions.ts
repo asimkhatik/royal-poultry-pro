@@ -10,12 +10,14 @@ export const deleteCustomerCompletely = createServerFn({ method: "POST" })
     return { customerId: input.customerId, reason: input.reason?.slice(0, 500) ?? null };
   })
   .handler(async ({ data, context }) => {
-    // Verify admin
-    const { data: isAdmin, error: roleErr } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (roleErr || !isAdmin) throw new Error("Forbidden: admin only");
+    // Verify admin via user_roles (RLS ensures user can read own row)
+    const { data: roleRow } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!roleRow) throw new Error("Forbidden: admin only");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
