@@ -76,6 +76,16 @@ function AuthPage() {
 
   const signInFn = useServerFn(signInWithIdentifier);
 
+  const [showBioPrompt, setShowBioPrompt] = useState(false);
+
+  const finishSignIn = async () => {
+    if (isNative() && bioAvailable && !bioEnabled) {
+      setShowBioPrompt(true);
+      return;
+    }
+    navigate({ to: "/", replace: true });
+  };
+
   const onSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -86,11 +96,24 @@ function AuthPage() {
       const { error } = await supabase.auth.setSession({ access_token, refresh_token });
       if (error) throw error;
       toast.success("Welcome back!");
-      navigate({ to: "/", replace: true });
+      await finishSignIn();
     } catch {
       toast.error("Invalid credentials");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const onEnableBioPrompt = async () => {
+    try {
+      await enableBiometric();
+      setBioEnabled(true);
+      toast.success(`${bioLabel} login enabled`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to enable");
+    } finally {
+      setShowBioPrompt(false);
+      navigate({ to: "/", replace: true });
     }
   };
 
