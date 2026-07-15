@@ -18,6 +18,16 @@ import {
   isNative,
   loginWithBiometric,
 } from "@/lib/biometric";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
