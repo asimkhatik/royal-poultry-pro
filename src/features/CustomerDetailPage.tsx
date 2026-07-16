@@ -208,6 +208,23 @@ Thank you for your business!`,
           <p className="text-sm text-muted-foreground">
             {c.phone || "—"} · {c.address || "No address"}
           </p>
+          <div className="mt-2 flex items-center gap-2">
+            {c.approval_status === "pending" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 text-gold px-2.5 py-0.5 text-xs font-semibold">
+                <Clock className="size-3" /> Pending approval
+              </span>
+            )}
+            {c.approval_status === "rejected" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 text-destructive px-2.5 py-0.5 text-xs font-semibold">
+                <XCircle className="size-3" /> Rejected
+              </span>
+            )}
+            {c.approval_status === "approved" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 text-success px-2.5 py-0.5 text-xs font-semibold">
+                <CheckCircle2 className="size-3" /> Approved
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={exportXLSX}>
