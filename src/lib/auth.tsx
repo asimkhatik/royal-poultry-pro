@@ -87,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role,
         customerId,
         profile,
+        approvalStatus,
         refresh,
         signOut,
       }}
