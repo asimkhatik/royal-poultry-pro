@@ -68,33 +68,30 @@ export function CustomersPage() {
 
   const upsert = useMutation({
     mutationFn: async () => {
+      const payload = {
+        name: form.name,
+        phone: form.phone || null,
+        address: form.address || null,
+        status: form.status,
+        opening_balance: form.opening_balance ? Number(form.opening_balance) : 0,
+        opening_balance_date: form.opening_balance_date || null,
+        opening_balance_notes: form.opening_balance_notes || null,
+      };
       if (editing) {
-        const { error } = await supabase
-          .from("customers")
-          .update({
-            name: form.name,
-            phone: form.phone || null,
-            address: form.address || null,
-            status: form.status,
-          })
-          .eq("id", editing.id);
+        const { error } = await supabase.from("customers").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("customers").insert({
-          name: form.name,
-          phone: form.phone || null,
-          address: form.address || null,
-          status: form.status,
-        });
+        const { error } = await supabase.from("customers").insert(payload);
         if (error) throw error;
       }
     },
     onSuccess: () => {
       toast.success(editing ? "Customer updated" : "Customer added");
       qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["customer-detail"] });
       setOpen(false);
       setEditing(null);
-      setForm({ name: "", phone: "", address: "", status: "active" });
+      setForm(emptyForm());
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -113,12 +110,20 @@ export function CustomersPage() {
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ name: "", phone: "", address: "", status: "active" });
+    setForm(emptyForm());
     setOpen(true);
   };
   const openEdit = (c: Customer) => {
     setEditing(c);
-    setForm({ name: c.name, phone: c.phone ?? "", address: c.address ?? "", status: c.status });
+    setForm({
+      name: c.name,
+      phone: c.phone ?? "",
+      address: c.address ?? "",
+      status: c.status,
+      opening_balance: c.opening_balance ? String(c.opening_balance) : "",
+      opening_balance_date: c.opening_balance_date ?? "",
+      opening_balance_notes: c.opening_balance_notes ?? "",
+    });
     setOpen(true);
   };
 
