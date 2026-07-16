@@ -60,6 +60,9 @@ export type Database = {
           current_balance: number
           id: string
           name: string
+          opening_balance: number
+          opening_balance_date: string | null
+          opening_balance_notes: string | null
           phone: string | null
           reminder_enabled: boolean
           status: string
@@ -73,6 +76,9 @@ export type Database = {
           current_balance?: number
           id?: string
           name: string
+          opening_balance?: number
+          opening_balance_date?: string | null
+          opening_balance_notes?: string | null
           phone?: string | null
           reminder_enabled?: boolean
           status?: string
@@ -86,6 +92,9 @@ export type Database = {
           current_balance?: number
           id?: string
           name?: string
+          opening_balance?: number
+          opening_balance_date?: string | null
+          opening_balance_notes?: string | null
           phone?: string | null
           reminder_enabled?: boolean
           status?: string
