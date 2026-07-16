@@ -57,9 +57,50 @@ export function CustomerDetailPage({ id }: { id: string }) {
     onError: (e: Error) => toast.error(e.message || "Failed to delete customer"),
   });
 
+  const approve = useMutation({
+    mutationFn: async () => {
+      const payload: Record<string, unknown> = {
+        approval_status: "approved",
+        status: "active",
+        approved_at: new Date().toISOString(),
+      };
+      if (obAmount !== "") payload.opening_balance = Number(obAmount);
+      if (obDate) payload.opening_balance_date = obDate;
+      if (obNotes) payload.opening_balance_notes = obNotes;
+      const { error } = await supabase.from("customers").update(payload).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Customer approved and activated.");
+      qc.invalidateQueries({ queryKey: ["customer-detail", id] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const reject = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("customers").update({
+        approval_status: "rejected",
+        status: "inactive",
+        rejection_reason: rejectReason || null,
+      }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Registration rejected.");
+      setRejectOpen(false);
+      qc.invalidateQueries({ queryKey: ["customer-detail", id] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   const c = data?.customer;
   if (!c) return <div>Customer not found</div>;
+  const isPending = c.approval_status === "pending";
 
   const opening = {
     amount: Number(c.opening_balance ?? 0),
