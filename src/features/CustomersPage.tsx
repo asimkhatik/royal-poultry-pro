@@ -297,3 +297,15 @@ export function CustomersPage() {
     </div>
   );
 }
+
+function emptyForm() {
+  return {
+    name: "",
+    phone: "",
+    address: "",
+    status: "active",
+    opening_balance: "",
+    opening_balance_date: "",
+    opening_balance_notes: "",
+  };
+}
