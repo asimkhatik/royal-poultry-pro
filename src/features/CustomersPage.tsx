@@ -28,6 +28,7 @@ type Customer = {
   address: string | null;
   current_balance: number;
   status: string;
+  approval_status: "pending" | "approved" | "rejected";
   created_at: string;
   opening_balance: number;
   opening_balance_date: string | null;
