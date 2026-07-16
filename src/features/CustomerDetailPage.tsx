@@ -100,7 +100,7 @@ export function CustomerDetailPage({ id }: { id: string }) {
     if (idx < 0) return;
     const sale = data!.sales[idx];
     // previous balance = sum of all prior debits & credits up to but not including this sale (approx)
-    let prev = 0;
+    let prev = Number(c.opening_balance ?? 0);
     for (let i = 0; i < idx; i++) prev += Number(data!.sales[i].total_amount);
     for (const p of data!.payments) {
       if (new Date(p.payment_date) < new Date(sale.sale_date)) prev -= Number(p.amount);
