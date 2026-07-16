@@ -56,6 +56,7 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [suEmail, setSuEmail] = useState("");
+  const [suAddress, setSuAddress] = useState("");
   const [suPwd, setSuPwd] = useState("");
 
   const [resetEmail, setResetEmail] = useState("");
