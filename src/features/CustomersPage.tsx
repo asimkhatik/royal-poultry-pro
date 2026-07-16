@@ -182,6 +182,59 @@ export function CustomersPage() {
                   ))}
                 </div>
               </div>
+
+              <div className="rounded-md border border-border bg-muted/30 p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Opening Balance {editing ? "" : "(Previous Due)"}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Admin only</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="obal" className="text-xs">Amount (₹)</Label>
+                    <Input
+                      id="obal"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={form.opening_balance}
+                      onChange={(e) => setForm({ ...form, opening_balance: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="obdate" className="text-xs">As-of Date</Label>
+                    <Input
+                      id="obdate"
+                      type="date"
+                      value={form.opening_balance_date}
+                      onChange={(e) => setForm({ ...form, opening_balance_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="obnotes" className="text-xs">Notes (optional)</Label>
+                  <Input
+                    id="obnotes"
+                    placeholder="Previous outstanding before using ROYAL BROILER"
+                    value={form.opening_balance_notes}
+                    onChange={(e) => setForm({ ...form, opening_balance_notes: e.target.value })}
+                  />
+                </div>
+                {editing && Number(editing.opening_balance) > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("Remove the opening balance for this customer? Their outstanding will be recalculated.")) {
+                        setForm({ ...form, opening_balance: "0", opening_balance_date: "", opening_balance_notes: "" });
+                      }
+                    }}
+                    className="text-xs text-destructive underline"
+                  >
+                    Remove opening balance
+                  </button>
+                )}
+              </div>
               <DialogFooter>
                 <Button type="submit" disabled={upsert.isPending}>{t("save")}</Button>
               </DialogFooter>
