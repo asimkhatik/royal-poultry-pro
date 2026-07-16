@@ -29,6 +29,9 @@ type Customer = {
   current_balance: number;
   status: string;
   created_at: string;
+  opening_balance: number;
+  opening_balance_date: string | null;
+  opening_balance_notes: string | null;
 };
 
 export function CustomersPage() {
@@ -37,7 +40,15 @@ export function CustomersPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
-  const [form, setForm] = useState({ name: "", phone: "", address: "", status: "active" });
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    status: "active",
+    opening_balance: "",
+    opening_balance_date: "",
+    opening_balance_notes: "",
+  });
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers"],
