@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.handle_customer_opening_balance() FROM PUBLIC, anon, authenticated;
