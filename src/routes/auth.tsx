@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AtSign, Mail, Lock, Phone, User, Fingerprint } from "lucide-react";
+import { AtSign, Mail, Lock, Phone, User, Fingerprint, Home } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
