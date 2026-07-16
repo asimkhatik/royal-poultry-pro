@@ -59,7 +59,14 @@ export function CustomerDetailPage({ id }: { id: string }) {
 
   const approve = useMutation({
     mutationFn: async () => {
-      const payload: Record<string, unknown> = {
+      const payload: {
+        approval_status: "approved";
+        status: string;
+        approved_at: string;
+        opening_balance?: number;
+        opening_balance_date?: string;
+        opening_balance_notes?: string;
+      } = {
         approval_status: "approved",
         status: "active",
         approved_at: new Date().toISOString(),
