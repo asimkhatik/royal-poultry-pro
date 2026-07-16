@@ -56,6 +56,9 @@ export type Database = {
       customers: {
         Row: {
           address: string | null
+          approval_status: Database["public"]["Enums"]["customer_approval"]
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           current_balance: number
           id: string
@@ -64,6 +67,7 @@ export type Database = {
           opening_balance_date: string | null
           opening_balance_notes: string | null
           phone: string | null
+          rejection_reason: string | null
           reminder_enabled: boolean
           status: string
           updated_at: string
@@ -72,6 +76,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          approval_status?: Database["public"]["Enums"]["customer_approval"]
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           current_balance?: number
           id?: string
@@ -80,6 +87,7 @@ export type Database = {
           opening_balance_date?: string | null
           opening_balance_notes?: string | null
           phone?: string | null
+          rejection_reason?: string | null
           reminder_enabled?: boolean
           status?: string
           updated_at?: string
@@ -88,6 +96,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          approval_status?: Database["public"]["Enums"]["customer_approval"]
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           current_balance?: number
           id?: string
@@ -96,6 +107,7 @@ export type Database = {
           opening_balance_date?: string | null
           opening_balance_notes?: string | null
           phone?: string | null
+          rejection_reason?: string | null
           reminder_enabled?: boolean
           status?: string
           updated_at?: string
@@ -347,6 +359,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "customer"
+      customer_approval: "pending" | "approved" | "rejected"
       payment_mode: "cash" | "upi" | "bank_transfer"
     }
     CompositeTypes: {
@@ -476,6 +489,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "customer"],
+      customer_approval: ["pending", "approved", "rejected"],
       payment_mode: ["cash", "upi", "bank_transfer"],
     },
   },

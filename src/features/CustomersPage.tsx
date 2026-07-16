@@ -28,6 +28,7 @@ type Customer = {
   address: string | null;
   current_balance: number;
   status: string;
+  approval_status: "pending" | "approved" | "rejected";
   created_at: string;
   opening_balance: number;
   opening_balance_date: string | null;
@@ -265,9 +266,15 @@ export function CustomersPage() {
                       {c.phone || "—"} · joined {fmtDate(c.created_at)}
                     </div>
                   </Link>
-                  <Badge variant={c.status === "active" ? "default" : "secondary"} className="hidden sm:inline-flex">
-                    {c.status}
-                  </Badge>
+                  {c.approval_status === "pending" ? (
+                    <Badge className="hidden sm:inline-flex bg-gold text-gold-foreground">Pending</Badge>
+                  ) : c.approval_status === "rejected" ? (
+                    <Badge variant="destructive" className="hidden sm:inline-flex">Rejected</Badge>
+                  ) : (
+                    <Badge variant={c.status === "active" ? "default" : "secondary"} className="hidden sm:inline-flex">
+                      {c.status}
+                    </Badge>
+                  )}
                   <div className={`font-semibold w-24 text-right ${Number(c.current_balance) > 0 ? "text-destructive" : Number(c.current_balance) < 0 ? "text-success" : ""}`}>
                     {inr(c.current_balance)}
                   </div>

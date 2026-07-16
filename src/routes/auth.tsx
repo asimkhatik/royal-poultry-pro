@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AtSign, Mail, Lock, Phone, User, Fingerprint } from "lucide-react";
+import { AtSign, Mail, Lock, Phone, User, Fingerprint, Home } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -56,6 +56,7 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [suEmail, setSuEmail] = useState("");
+  const [suAddress, setSuAddress] = useState("");
   const [suPwd, setSuPwd] = useState("");
 
   const [resetEmail, setResetEmail] = useState("");
@@ -137,12 +138,12 @@ function AuthPage() {
       password: suPwd,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: { full_name: name, phone },
+        data: { full_name: name, phone, address: suAddress },
       },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created. You can sign in now.");
+    toast.success("Account created! Awaiting admin approval before you can access your account.");
   };
 
   const onReset = async (e: React.FormEvent) => {
@@ -270,6 +271,7 @@ function AuthPage() {
                     <GlassField id="su-name" label="Full name" icon={User} required value={name} onChange={setName} placeholder="Your name" />
                     <GlassField id="su-phone" label="Mobile number" icon={Phone} required value={phone} onChange={setPhone} placeholder="+91 9xxxxxxxxx" />
                     <GlassField id="su-email" label="Email" icon={Mail} type="email" required value={suEmail} onChange={setSuEmail} placeholder="you@example.com" />
+                    <GlassField id="su-addr" label="Address" icon={Home} value={suAddress} onChange={setSuAddress} placeholder="Shop / delivery address" />
                     <GlassField id="su-pwd" label="Password" icon={Lock} type="password" required minLength={6} value={suPwd} onChange={setSuPwd} placeholder="At least 6 characters" />
                     <Button type="submit" disabled={busy} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
                       {busy ? "Creating account..." : "Create account"}

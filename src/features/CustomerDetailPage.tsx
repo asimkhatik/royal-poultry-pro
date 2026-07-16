@@ -10,7 +10,9 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, ChevronLeft, FileText, Share2, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Download, ChevronLeft, FileText, Share2, Trash2, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { inr, inrShort, kg, fmtDate } from "@/lib/format";
 import { buildLedger, LedgerTable } from "@/components/LedgerTable";
@@ -24,6 +26,12 @@ export function CustomerDetailPage({ id }: { id: string }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reason, setReason] = useState("");
   const deleteFn = useServerFn(deleteCustomerCompletely);
+
+  const [obAmount, setObAmount] = useState("");
+  const [obDate, setObDate] = useState("");
+  const [obNotes, setObNotes] = useState("");
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["customer-detail", id],
@@ -49,9 +57,57 @@ export function CustomerDetailPage({ id }: { id: string }) {
     onError: (e: Error) => toast.error(e.message || "Failed to delete customer"),
   });
 
+  const approve = useMutation({
+    mutationFn: async () => {
+      const payload: {
+        approval_status: "approved";
+        status: string;
+        approved_at: string;
+        opening_balance?: number;
+        opening_balance_date?: string;
+        opening_balance_notes?: string;
+      } = {
+        approval_status: "approved",
+        status: "active",
+        approved_at: new Date().toISOString(),
+      };
+      if (obAmount !== "") payload.opening_balance = Number(obAmount);
+      if (obDate) payload.opening_balance_date = obDate;
+      if (obNotes) payload.opening_balance_notes = obNotes;
+      const { error } = await supabase.from("customers").update(payload).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Customer approved and activated.");
+      qc.invalidateQueries({ queryKey: ["customer-detail", id] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const reject = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("customers").update({
+        approval_status: "rejected",
+        status: "inactive",
+        rejection_reason: rejectReason || null,
+      }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Registration rejected.");
+      setRejectOpen(false);
+      qc.invalidateQueries({ queryKey: ["customer-detail", id] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   const c = data?.customer;
   if (!c) return <div>Customer not found</div>;
+  const isPending = c.approval_status === "pending";
 
   const opening = {
     amount: Number(c.opening_balance ?? 0),
@@ -152,6 +208,23 @@ Thank you for your business!`,
           <p className="text-sm text-muted-foreground">
             {c.phone || "—"} · {c.address || "No address"}
           </p>
+          <div className="mt-2 flex items-center gap-2">
+            {c.approval_status === "pending" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 text-gold px-2.5 py-0.5 text-xs font-semibold">
+                <Clock className="size-3" /> Pending approval
+              </span>
+            )}
+            {c.approval_status === "rejected" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 text-destructive px-2.5 py-0.5 text-xs font-semibold">
+                <XCircle className="size-3" /> Rejected
+              </span>
+            )}
+            {c.approval_status === "approved" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-success/15 text-success px-2.5 py-0.5 text-xs font-semibold">
+                <CheckCircle2 className="size-3" /> Approved
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={exportXLSX}>
@@ -196,6 +269,69 @@ Thank you for your business!`,
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {isPending && (
+        <Card className="border-gold/50 bg-gold/5">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="size-4 text-gold" /> Pending Registration — Review & Approve
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This customer registered themselves. Optionally set an opening balance (previous outstanding), then approve to activate the account.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Opening Balance (₹)</Label>
+                <Input type="number" step="0.01" placeholder="0.00" value={obAmount} onChange={(e) => setObAmount(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Opening Balance Date</Label>
+                <Input type="date" value={obDate} onChange={(e) => setObDate(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Notes (optional)</Label>
+              <Input placeholder="Previous outstanding before using ROYAL BROILER" value={obNotes} onChange={(e) => setObNotes(e.target.value)} />
+            </div>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button onClick={() => approve.mutate()} disabled={approve.isPending} className="gold-gradient text-gold-foreground">
+                <CheckCircle2 className="size-4 mr-2" /> {approve.isPending ? "Saving…" : "Save & Approve Customer"}
+              </Button>
+              <Button variant="destructive" onClick={() => setRejectOpen(true)}>
+                <XCircle className="size-4 mr-2" /> Reject Registration
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Registration?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {c.name} will not be able to access their account. You can approve them later if this changes.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Reason (optional)</Label>
+            <Textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} rows={2} />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={reject.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); reject.mutate(); }}
+              disabled={reject.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {reject.isPending ? "Rejecting…" : "Reject Registration"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
 
       <div className="grid grid-cols-3 gap-4">
        <Stat label="Outstanding" value={inrShort(c.current_balance)} tone={Number(c.current_balance) > 0 ? "danger" : "success"} />
