@@ -10,7 +10,9 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, ChevronLeft, FileText, Share2, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Download, ChevronLeft, FileText, Share2, Trash2, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { inr, inrShort, kg, fmtDate } from "@/lib/format";
 import { buildLedger, LedgerTable } from "@/components/LedgerTable";
@@ -24,6 +26,12 @@ export function CustomerDetailPage({ id }: { id: string }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [reason, setReason] = useState("");
   const deleteFn = useServerFn(deleteCustomerCompletely);
+
+  const [obAmount, setObAmount] = useState("");
+  const [obDate, setObDate] = useState("");
+  const [obNotes, setObNotes] = useState("");
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["customer-detail", id],
