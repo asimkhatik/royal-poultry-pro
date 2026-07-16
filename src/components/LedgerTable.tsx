@@ -11,9 +11,20 @@ export type LedgerRow = {
 export function buildLedger(
   sales: Array<{ sale_date: string; total_amount: number; weight_kg: number; rate_per_kg: number; id: string }>,
   payments: Array<{ payment_date: string; amount: number; payment_mode: string; id: string }>,
+  opening?: { amount: number; date?: string | null; notes?: string | null },
 ): LedgerRow[] {
   type E = { date: string; debit: number; credit: number; description: string; ts: number };
   const events: E[] = [];
+  if (opening && Number(opening.amount) !== 0) {
+    const d = opening.date || sales[0]?.sale_date || new Date().toISOString().slice(0, 10);
+    events.push({
+      date: d,
+      debit: Number(opening.amount) > 0 ? Number(opening.amount) : 0,
+      credit: Number(opening.amount) < 0 ? -Number(opening.amount) : 0,
+      description: `Opening Balance${opening.notes ? ` — ${opening.notes}` : ""}`,
+      ts: new Date(d).getTime() - 1, // ensure it's first
+    });
+  }
   for (const s of sales) {
     events.push({
       date: s.sale_date,
