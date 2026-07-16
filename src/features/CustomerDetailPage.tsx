@@ -53,7 +53,12 @@ export function CustomerDetailPage({ id }: { id: string }) {
   const c = data?.customer;
   if (!c) return <div>Customer not found</div>;
 
-  const rows = buildLedger(data!.sales, data!.payments);
+  const opening = {
+    amount: Number(c.opening_balance ?? 0),
+    date: c.opening_balance_date,
+    notes: c.opening_balance_notes,
+  };
+  const rows = buildLedger(data!.sales, data!.payments, opening);
   const totalPurchase = data!.sales.reduce((a, s) => a + Number(s.total_amount), 0);
   const totalPaid = data!.payments.reduce((a, p) => a + Number(p.amount), 0);
 
