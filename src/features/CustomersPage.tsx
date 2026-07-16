@@ -29,6 +29,9 @@ type Customer = {
   current_balance: number;
   status: string;
   created_at: string;
+  opening_balance: number;
+  opening_balance_date: string | null;
+  opening_balance_notes: string | null;
 };
 
 export function CustomersPage() {
@@ -37,7 +40,15 @@ export function CustomersPage() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
-  const [form, setForm] = useState({ name: "", phone: "", address: "", status: "active" });
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    status: "active",
+    opening_balance: "",
+    opening_balance_date: "",
+    opening_balance_notes: "",
+  });
 
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ["customers"],
@@ -57,33 +68,30 @@ export function CustomersPage() {
 
   const upsert = useMutation({
     mutationFn: async () => {
+      const payload = {
+        name: form.name,
+        phone: form.phone || null,
+        address: form.address || null,
+        status: form.status,
+        opening_balance: form.opening_balance ? Number(form.opening_balance) : 0,
+        opening_balance_date: form.opening_balance_date || null,
+        opening_balance_notes: form.opening_balance_notes || null,
+      };
       if (editing) {
-        const { error } = await supabase
-          .from("customers")
-          .update({
-            name: form.name,
-            phone: form.phone || null,
-            address: form.address || null,
-            status: form.status,
-          })
-          .eq("id", editing.id);
+        const { error } = await supabase.from("customers").update(payload).eq("id", editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("customers").insert({
-          name: form.name,
-          phone: form.phone || null,
-          address: form.address || null,
-          status: form.status,
-        });
+        const { error } = await supabase.from("customers").insert(payload);
         if (error) throw error;
       }
     },
     onSuccess: () => {
       toast.success(editing ? "Customer updated" : "Customer added");
       qc.invalidateQueries({ queryKey: ["customers"] });
+      qc.invalidateQueries({ queryKey: ["customer-detail"] });
       setOpen(false);
       setEditing(null);
-      setForm({ name: "", phone: "", address: "", status: "active" });
+      setForm(emptyForm());
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -102,12 +110,20 @@ export function CustomersPage() {
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ name: "", phone: "", address: "", status: "active" });
+    setForm(emptyForm());
     setOpen(true);
   };
   const openEdit = (c: Customer) => {
     setEditing(c);
-    setForm({ name: c.name, phone: c.phone ?? "", address: c.address ?? "", status: c.status });
+    setForm({
+      name: c.name,
+      phone: c.phone ?? "",
+      address: c.address ?? "",
+      status: c.status,
+      opening_balance: c.opening_balance ? String(c.opening_balance) : "",
+      opening_balance_date: c.opening_balance_date ?? "",
+      opening_balance_notes: c.opening_balance_notes ?? "",
+    });
     setOpen(true);
   };
 
@@ -165,6 +181,59 @@ export function CustomersPage() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="rounded-md border border-border bg-muted/30 p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Opening Balance {editing ? "" : "(Previous Due)"}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Admin only</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="obal" className="text-xs">Amount (₹)</Label>
+                    <Input
+                      id="obal"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={form.opening_balance}
+                      onChange={(e) => setForm({ ...form, opening_balance: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="obdate" className="text-xs">As-of Date</Label>
+                    <Input
+                      id="obdate"
+                      type="date"
+                      value={form.opening_balance_date}
+                      onChange={(e) => setForm({ ...form, opening_balance_date: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="obnotes" className="text-xs">Notes (optional)</Label>
+                  <Input
+                    id="obnotes"
+                    placeholder="Previous outstanding before using ROYAL BROILER"
+                    value={form.opening_balance_notes}
+                    onChange={(e) => setForm({ ...form, opening_balance_notes: e.target.value })}
+                  />
+                </div>
+                {editing && Number(editing.opening_balance) > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm("Remove the opening balance for this customer? Their outstanding will be recalculated.")) {
+                        setForm({ ...form, opening_balance: "0", opening_balance_date: "", opening_balance_notes: "" });
+                      }
+                    }}
+                    className="text-xs text-destructive underline"
+                  >
+                    Remove opening balance
+                  </button>
+                )}
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={upsert.isPending}>{t("save")}</Button>
@@ -227,4 +296,16 @@ export function CustomersPage() {
       </Card>
     </div>
   );
+}
+
+function emptyForm() {
+  return {
+    name: "",
+    phone: "",
+    address: "",
+    status: "active",
+    opening_balance: "",
+    opening_balance_date: "",
+    opening_balance_notes: "",
+  };
 }
