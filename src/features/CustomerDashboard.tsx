@@ -42,7 +42,11 @@ export function CustomerDashboard() {
   const totalPurchase = (data?.sales ?? []).reduce((a, s) => a + Number(s.total_amount), 0);
   const totalPaid = (data?.payments ?? []).reduce((a, p) => a + Number(p.amount), 0);
   const balance = Number(c?.current_balance ?? 0);
-  const rows = buildLedger(data?.sales ?? [], data?.payments ?? []);
+  const rows = buildLedger(data?.sales ?? [], data?.payments ?? [], {
+    amount: Number(c?.opening_balance ?? 0),
+    date: c?.opening_balance_date ?? null,
+    notes: c?.opening_balance_notes ?? null,
+  });
 
   const downloadStatement = async () => {
     if (!c) return;
