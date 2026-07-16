@@ -12,12 +12,12 @@ import { PayBillDialog } from "@/components/PayBillDialog";
 import { StatCard } from "@/components/StatCard";
 
 export function CustomerDashboard() {
-  const { customerId, profile } = useAuth();
+  const { customerId, profile, approvalStatus } = useAuth();
   const { t } = useT();
 
   const { data } = useQuery({
     queryKey: ["customer-self", customerId],
-    enabled: !!customerId,
+    enabled: !!customerId && approvalStatus === "approved",
     queryFn: async () => {
       const [{ data: customer }, { data: sales }, { data: payments }] = await Promise.all([
         supabase.from("customers").select("*").eq("id", customerId!).maybeSingle(),
@@ -37,6 +37,31 @@ export function CustomerDashboard() {
       </div>
     );
   }
+
+  if (approvalStatus === "pending") {
+    return (
+      <div className="mx-auto max-w-md rounded-2xl border border-gold/40 bg-card p-8 text-center shadow-gold">
+        <Crown className="mx-auto size-10 text-gold" />
+        <h2 className="mt-4 font-display text-xl font-bold">Awaiting Admin Approval</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Hi {profile?.full_name || "there"}, your account has been created and is pending review by the admin.
+          You'll be able to view your ledger and balance once approved.
+        </p>
+      </div>
+    );
+  }
+
+  if (approvalStatus === "rejected") {
+    return (
+      <div className="mx-auto max-w-md rounded-2xl border border-destructive/50 bg-card p-8 text-center">
+        <h2 className="font-display text-xl font-bold text-destructive">Registration Rejected</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Your account registration was not approved. Please contact ROYAL BROILER for assistance.
+        </p>
+      </div>
+    );
+  }
+
 
   const c = data?.customer;
   const totalPurchase = (data?.sales ?? []).reduce((a, s) => a + Number(s.total_amount), 0);
