@@ -11,6 +11,7 @@ type AuthState = {
   role: AppRole | null;
   customerId: string | null;
   profile: { full_name: string | null; phone: string | null; email: string | null } | null;
+  approvalStatus: "pending" | "approved" | "rejected" | null;
   refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AppRole | null>(null);
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [profile, setProfile] = useState<AuthState["profile"]>(null);
+  const [approvalStatus, setApprovalStatus] = useState<AuthState["approvalStatus"]>(null);
   const [loading, setLoading] = useState(true);
 
   async function loadProfile(uid: string) {
@@ -36,6 +38,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ? { full_name: prof.full_name, phone: prof.phone, email: prof.email }
         : null,
     );
+    if (prof?.customer_id) {
+      const { data: cust } = await supabase
+        .from("customers")
+        .select("approval_status")
+        .eq("id", prof.customer_id)
+        .maybeSingle();
+      setApprovalStatus((cust?.approval_status as AuthState["approvalStatus"]) ?? null);
+    } else {
+      setApprovalStatus(null);
+    }
   }
 
   useEffect(() => {
