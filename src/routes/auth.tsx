@@ -138,12 +138,12 @@ function AuthPage() {
       password: suPwd,
       options: {
         emailRedirectTo: `${window.location.origin}/`,
-        data: { full_name: name, phone },
+        data: { full_name: name, phone, address: suAddress },
       },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created. You can sign in now.");
+    toast.success("Account created! Awaiting admin approval before you can access your account.");
   };
 
   const onReset = async (e: React.FormEvent) => {
