@@ -270,6 +270,69 @@ Thank you for your business!`,
         </AlertDialogContent>
       </AlertDialog>
 
+      {isPending && (
+        <Card className="border-gold/50 bg-gold/5">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="size-4 text-gold" /> Pending Registration — Review & Approve
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This customer registered themselves. Optionally set an opening balance (previous outstanding), then approve to activate the account.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Opening Balance (₹)</Label>
+                <Input type="number" step="0.01" placeholder="0.00" value={obAmount} onChange={(e) => setObAmount(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Opening Balance Date</Label>
+                <Input type="date" value={obDate} onChange={(e) => setObDate(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Notes (optional)</Label>
+              <Input placeholder="Previous outstanding before using ROYAL BROILER" value={obNotes} onChange={(e) => setObNotes(e.target.value)} />
+            </div>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button onClick={() => approve.mutate()} disabled={approve.isPending} className="gold-gradient text-gold-foreground">
+                <CheckCircle2 className="size-4 mr-2" /> {approve.isPending ? "Saving…" : "Save & Approve Customer"}
+              </Button>
+              <Button variant="destructive" onClick={() => setRejectOpen(true)}>
+                <XCircle className="size-4 mr-2" /> Reject Registration
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Registration?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {c.name} will not be able to access their account. You can approve them later if this changes.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Reason (optional)</Label>
+            <Textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} rows={2} />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={reject.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); reject.mutate(); }}
+              disabled={reject.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {reject.isPending ? "Rejecting…" : "Reject Registration"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
       <div className="grid grid-cols-3 gap-4">
        <Stat label="Outstanding" value={inrShort(c.current_balance)} tone={Number(c.current_balance) > 0 ? "danger" : "success"} />
        <Stat label="Total purchase" value={inrShort(totalPurchase)} />
