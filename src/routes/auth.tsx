@@ -188,18 +188,15 @@ function AuthPage() {
           <h1 className="font-display text-2xl font-bold tracking-tight">ROYAL BROILER</h1>
           <p className="mt-1 text-sm text-gold tracking-[0.3em] uppercase font-medium">Manage • Grow • Succeed</p>
 
-          <p className="mt-6 text-2xl sm:text-3xl font-semibold leading-snug tracking-tight">
+          <p className="mt-3 text-2xl sm:text-3xl font-semibold leading-snug tracking-tight">
             Every Bird Counted.
             <span className="block text-gold mt-0.5">Every Rupee Tracked.</span>
           </p>
 
-          <p className="mt-3 text-sm text-primary-foreground/60 max-w-xs leading-relaxed">
-            Smart poultry business management for modern broiler farms.
-          </p>
         </div>
 
         {/* Glass card */}
-        <div className="w-full mt-10">
+        <div className="w-full mt-4">
           <div className="rounded-3xl bg-white/[0.07] p-6 sm:p-8 ring-1 ring-white/15 shadow-[0_24px_64px_-20px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
             {showReset ? (
               <form onSubmit={onReset} className="space-y-5">
