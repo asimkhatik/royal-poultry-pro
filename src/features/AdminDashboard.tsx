@@ -1,127 +1,160 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Crown, Receipt, Scale, TrendingUp, Wallet, Users } from "lucide-react";
-import { inr, kg, fmtDate, todayISO } from "@/lib/format";
+import { Bell, BellOff, Crown, Receipt, Scale, TrendingUp, Wallet, Users, UserCheck } from "lucide-react";
+import { inr, kg, fmtDate } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { StatCard } from "@/components/StatCard";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { DayPickerControl } from "@/components/DayPicker";
+import { format } from "date-fns";
+
+function toISO(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
 export function AdminDashboard() {
   const { t } = useT();
-  const today = todayISO();
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+  const dateISO = toISO(selectedDate);
+  const isToday = dateISO === toISO(new Date());
 
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-dashboard", today],
+    queryKey: ["admin-dashboard-day", dateISO],
     queryFn: async () => {
-      const since = new Date();
-      since.setDate(since.getDate() - 13);
-      const sinceISO = since.toISOString().slice(0, 10);
+      const [salesDay, paymentsDay, customers, settings, dayReminders] = await Promise.all([
+        supabase
+          .from("sales")
+          .select("id,customer_id,weight_kg,rate_per_kg,total_amount,quantity_of_broilers,sale_date,created_at,customer:customers(name)")
+          .eq("sale_date", dateISO)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("payments")
+          .select("id,customer_id,amount,payment_mode,payment_date,created_at,customer:customers(name)")
+          .eq("payment_date", dateISO)
+          .order("created_at", { ascending: false }),
+        supabase.from("customers").select("id,name,current_balance,status"),
+        supabase.from("reminder_settings").select("enabled,send_hour").eq("id", true).maybeSingle(),
+        supabase.from("reminder_logs").select("id,sent_at").eq("reminder_date", dateISO),
+      ]);
 
-      const [salesToday, salesAll, customers, payments, recentSales, recentPayments, topOutstanding, salesRange, settings, todayReminders] =
-        await Promise.all([
-          supabase.from("sales").select("weight_kg,total_amount").eq("sale_date", today),
-          supabase.from("sales").select("total_amount"),
-          supabase.from("customers").select("id,name,current_balance,status"),
-          supabase.from("payments").select("amount"),
-          supabase
-            .from("sales")
-            .select("id,sale_date,total_amount,weight_kg,rate_per_kg,customer:customers(name)")
-            .order("created_at", { ascending: false })
-            .limit(5),
-          supabase
-            .from("payments")
-            .select("id,payment_date,amount,payment_mode,customer:customers(name)")
-            .order("created_at", { ascending: false })
-            .limit(5),
-          supabase
-            .from("customers")
-            .select("id,name,current_balance")
-            .gt("current_balance", 0)
-            .order("current_balance", { ascending: false })
-            .limit(5),
-          supabase.from("sales").select("sale_date,total_amount").gte("sale_date", sinceISO),
-          supabase.from("reminder_settings").select("enabled,send_hour").eq("id", true).maybeSingle(),
-          supabase.from("reminder_logs").select("id,sent_at").eq("reminder_date", today),
-        ]);
+      const sales = salesDay.data ?? [];
+      const payments = paymentsDay.data ?? [];
 
-      const todayWeight = (salesToday.data ?? []).reduce((a, r) => a + Number(r.weight_kg), 0);
-      const todayRevenue = (salesToday.data ?? []).reduce((a, r) => a + Number(r.total_amount), 0);
-      const totalRevenue = (salesAll.data ?? []).reduce((a, r) => a + Number(r.total_amount), 0);
-      const totalCustomers = (customers.data ?? []).length;
-      const outstanding = (customers.data ?? []).reduce((a, r) => a + Math.max(0, Number(r.current_balance)), 0);
-      const totalPaid = (payments.data ?? []).reduce((a, r) => a + Number(r.amount), 0);
-
-      // 14-day trend
-      const byDay = new Map<string, number>();
-      for (let i = 13; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        byDay.set(d.toISOString().slice(0, 10), 0);
-      }
-      for (const r of salesRange.data ?? []) {
-        byDay.set(r.sale_date, (byDay.get(r.sale_date) ?? 0) + Number(r.total_amount));
-      }
-      const trend = Array.from(byDay.entries()).map(([date, amount]) => ({
-        date: new Date(date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }),
-        amount,
-      }));
+      const todayWeight = sales.reduce((a, r) => a + Number(r.weight_kg), 0);
+      const todayRevenue = sales.reduce((a, r) => a + Number(r.total_amount), 0);
+      const todayPayments = payments.reduce((a, r) => a + Number(r.amount), 0);
+      const todayOutstanding = Math.max(0, todayRevenue - todayPayments);
+      const activeCustomerIds = new Set(sales.map((s) => s.customer_id));
+      const totalOutstanding = (customers.data ?? []).reduce(
+        (a, r) => a + Math.max(0, Number(r.current_balance)),
+        0,
+      );
 
       return {
+        sales,
+        payments,
         todayWeight,
         todayRevenue,
-        totalRevenue,
-        totalCustomers,
-        outstanding,
-        totalPaid,
-        recentSales: recentSales.data ?? [],
-        recentPayments: recentPayments.data ?? [],
-        topOutstanding: topOutstanding.data ?? [],
-        trend,
+        todayPayments,
+        todayOutstanding,
+        activeCount: activeCustomerIds.size,
+        salesCount: sales.length,
+        totalOutstanding,
+        totalCustomers: (customers.data ?? []).length,
         reminderEnabled: Boolean(settings.data?.enabled),
         reminderHour: Number(settings.data?.send_hour ?? 9),
-        remindersToday: (todayReminders.data ?? []).length,
-        remindersSentToday: (todayReminders.data ?? []).filter((r) => r.sent_at).length,
+        remindersToday: (dayReminders.data ?? []).length,
+        remindersSentToday: (dayReminders.data ?? []).filter((r) => r.sent_at).length,
       };
     },
   });
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Crown className="size-7 text-gold" />
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">{t("dashboard")}</h1>
-          <p className="text-sm text-muted-foreground">Live snapshot of your business</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Crown className="size-7 text-gold" />
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">{t("dashboard")}</h1>
+            <p className="text-sm text-muted-foreground">
+              {isToday ? "Today" : format(selectedDate, "EEEE, dd MMM yyyy")} · daily snapshot
+            </p>
+          </div>
         </div>
+        <DayPickerControl value={selectedDate} onChange={setSelectedDate} />
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t("todaySales")} value={Number(data?.todayRevenue ?? 0)} format="currency" tone="revenue" icon={Receipt} highlight />
-        <StatCard label={t("todayWeight")} value={Number(data?.todayWeight ?? 0)} format="weight" tone="weight" icon={Scale} />
-        <StatCard label={t("totalRevenue")} value={Number(data?.totalRevenue ?? 0)} format="currency" tone="revenue" icon={TrendingUp} />
-        <StatCard label={t("outstanding")} value={Number(data?.outstanding ?? 0)} format="currency" tone="outstanding" icon={Wallet} />
+        <StatCard
+          label={isToday ? "Today's sales" : "Sales"}
+          value={Number(data?.todayRevenue ?? 0)}
+          format="currency"
+          tone="revenue"
+          icon={Receipt}
+          highlight
+        />
+        <StatCard
+          label={isToday ? "Today's weight" : "Weight sold"}
+          value={Number(data?.todayWeight ?? 0)}
+          format="weight"
+          tone="weight"
+          icon={Scale}
+        />
+        <StatCard
+          label={isToday ? "Today's payments" : "Payments"}
+          value={Number(data?.todayPayments ?? 0)}
+          format="currency"
+          tone="paid"
+          icon={Wallet}
+        />
+        <StatCard
+          label={isToday ? "Today's outstanding" : "Day's outstanding"}
+          value={Number(data?.todayOutstanding ?? 0)}
+          format="currency"
+          tone="outstanding"
+          icon={TrendingUp}
+        />
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t("totalCustomers")} value={Number(data?.totalCustomers ?? 0)} format="count" tone="customers" icon={Users} />
-        <StatCard label={t("totalPaid")} value={Number(data?.totalPaid ?? 0)} format="currency" tone="paid" icon={Wallet} />
-        <Card className="col-span-2 lg:col-span-2">
+        <StatCard
+          label="Customers active"
+          value={Number(data?.activeCount ?? 0)}
+          format="count"
+          tone="customers"
+          icon={UserCheck}
+        />
+        <StatCard
+          label="Transactions"
+          value={Number(data?.salesCount ?? 0)}
+          format="count"
+          tone="revenue"
+          icon={Receipt}
+        />
+        <Card>
+          <CardContent className="p-5">
+            <div className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-[0.12em]">
+              Total customers
+            </div>
+            <div className="mt-2 font-stat tabular-nums leading-none text-2xl sm:text-3xl">
+              {data?.totalCustomers ?? 0}
+            </div>
+            <Link to="/customers" className="text-xs text-primary hover:underline mt-2 inline-block">
+              Manage →
+            </Link>
+          </CardContent>
+        </Card>
+        <Card>
           <CardContent className="p-5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <div className={`size-10 rounded-lg flex items-center justify-center shrink-0 ${data?.reminderEnabled ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>
@@ -129,94 +162,66 @@ export function AdminDashboard() {
               </div>
               <div className="min-w-0">
                 <div className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-[0.12em]">
-                  Daily reminders
+                  Reminders
                 </div>
                 <div className="text-sm font-semibold truncate">
-                  {data?.reminderEnabled ? `On · ${String(data.reminderHour).padStart(2, "0")}:00 IST` : "Off"}
+                  {data?.reminderEnabled ? `On · ${String(data.reminderHour).padStart(2, "0")}:00` : "Off"}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Today: {data?.remindersSentToday ?? 0} sent / {data?.remindersToday ?? 0} generated
+                  {data?.remindersSentToday ?? 0} / {data?.remindersToday ?? 0} sent
                 </div>
               </div>
             </div>
             <Button asChild size="sm" variant="outline">
-              <Link to="/reminders">Manage</Link>
+              <Link to="/reminders">Open</Link>
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Daily sales — last 14 days</CardTitle>
-          </CardHeader>
-          <CardContent className="h-72">
-            {isLoading ? null : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data?.trend ?? []}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.25} />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v: number) => inr(v)} />
-                  <Line
-                    type="monotone"
-                    dataKey="amount"
-                    stroke="var(--chart-1)"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: "var(--chart-2)" }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Top outstanding</CardTitle>
-          </CardHeader>
-          <CardContent className="h-72">
-            {(data?.topOutstanding ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No outstanding balances 🎉</p>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data?.topOutstanding ?? []} layout="vertical">
-                  <XAxis type="number" tick={{ fontSize: 10 }} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={80} />
-                  <Tooltip formatter={(v: number) => inr(v)} />
-                  <Bar dataKey="current_balance" radius={[0, 6, 6, 0]}>
-                    {(data?.topOutstanding ?? []).map((_, i) => (
-                      <Cell key={i} fill={`var(--chart-${(i % 5) + 1})`} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base font-semibold">
+            Overall outstanding (all customers)
+          </CardTitle>
+          <Button asChild size="sm" variant="ghost">
+            <Link to="/reports">View reports →</Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="font-stat tabular-nums text-2xl font-semibold text-[oklch(0.55_0.20_25)] dark:text-[oklch(0.72_0.20_25)]">
+            {inr(data?.totalOutstanding ?? 0)}
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Lifetime totals moved to Reports & Analytics.
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Recent sales</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              {isToday ? "Today's sales" : `Sales on ${format(selectedDate, "dd MMM")}`}
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-border">
-              {(data?.recentSales ?? []).map((s) => (
+            <div className="divide-y divide-border max-h-80 overflow-y-auto">
+              {isLoading && <div className="px-4 py-6 text-sm text-muted-foreground">Loading…</div>}
+              {!isLoading && (data?.sales ?? []).map((s) => (
                 <div key={s.id} className="flex items-center justify-between px-4 py-3">
                   <div>
                     <div className="font-medium text-sm">{(s.customer as { name: string } | null)?.name ?? "—"}</div>
                     <div className="text-xs text-muted-foreground">
-                      {fmtDate(s.sale_date)} · {kg(s.weight_kg)} @ {inr(s.rate_per_kg)}
+                      {kg(s.weight_kg)} @ {inr(s.rate_per_kg)}
+                      {s.quantity_of_broilers ? ` · ${s.quantity_of_broilers} birds` : ""}
                     </div>
                   </div>
                   <div className="font-semibold text-primary">{inr(s.total_amount)}</div>
                 </div>
               ))}
-              {!data?.recentSales.length && (
-                <div className="px-4 py-6 text-sm text-muted-foreground">No sales yet</div>
+              {!isLoading && !data?.sales.length && (
+                <div className="px-4 py-6 text-sm text-muted-foreground">No sales on this date</div>
               )}
             </div>
           </CardContent>
@@ -224,11 +229,14 @@ export function AdminDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Recent payments</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              {isToday ? "Today's payments" : `Payments on ${format(selectedDate, "dd MMM")}`}
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-border">
-              {(data?.recentPayments ?? []).map((p) => (
+            <div className="divide-y divide-border max-h-80 overflow-y-auto">
+              {isLoading && <div className="px-4 py-6 text-sm text-muted-foreground">Loading…</div>}
+              {!isLoading && (data?.payments ?? []).map((p) => (
                 <div key={p.id} className="flex items-center justify-between px-4 py-3">
                   <div>
                     <div className="font-medium text-sm">{(p.customer as { name: string } | null)?.name ?? "—"}</div>
@@ -239,8 +247,8 @@ export function AdminDashboard() {
                   <div className="font-semibold text-success">{inr(p.amount)}</div>
                 </div>
               ))}
-              {!data?.recentPayments.length && (
-                <div className="px-4 py-6 text-sm text-muted-foreground">No payments yet</div>
+              {!isLoading && !data?.payments.length && (
+                <div className="px-4 py-6 text-sm text-muted-foreground">No payments on this date</div>
               )}
             </div>
           </CardContent>
@@ -249,4 +257,3 @@ export function AdminDashboard() {
     </div>
   );
 }
-
