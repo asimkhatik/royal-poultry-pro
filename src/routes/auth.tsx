@@ -193,9 +193,6 @@ function AuthPage() {
             <span className="block text-gold mt-0.5">Every Rupee Tracked.</span>
           </p>
 
-          <p className="mt-3 text-sm text-primary-foreground/60 max-w-xs leading-relaxed">
-            Smart poultry business management for modern broiler farms.
-          </p>
         </div>
 
         {/* Glass card */}
