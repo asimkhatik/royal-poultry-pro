@@ -280,8 +280,8 @@ function AuthPage() {
           </div>
         </div>
 
-        <p className="mt-8 text-center text-xs text-primary-foreground/40">
-          Trusted by poultry businesses. Built for growth.
+        <p className="mt-8 text-center text-[11px] tracking-[0.2em] uppercase text-gold/60 font-medium">
+          Designed by Asim Khatik
         </p>
       </div>
 
