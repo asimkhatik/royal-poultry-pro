@@ -103,9 +103,10 @@ export function CustomerDashboard() {
   const downloadStatement = async () => {
     if (!c) return;
     const pdf = await generateStatementPDF({
-      customer: { name: c.name, phone: c.phone, address: c.address },
+      customer: { name: c.name, phone: c.phone, address: c.address, id: c.id, status: c.status },
       rows,
       currentBalance: balance,
+      openingBalance: Number(c.opening_balance ?? 0),
     });
     pdf.save(`statement-${c.name.replace(/\s+/g, "_")}.pdf`);
   };
