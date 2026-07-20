@@ -248,82 +248,249 @@ export async function generateInvoicePDF(opts: {
 }
 
 export async function generateStatementPDF(opts: {
-  customer: Customer;
-  rows: { date: string; description: string; debit: number; credit: number; balance: number }[];
+  customer: Customer & { id?: string | null; status?: string | null };
+  rows: {
+    date: string;
+    description: string;
+    reference: string;
+    debit: number;
+    credit: number;
+    balance: number;
+  }[];
   currentBalance: number;
+  openingBalance?: number;
+  periodStart?: string;
+  periodEnd?: string;
 }): Promise<jsPDF> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
   const logoDataUrl = await loadLogoDataUrl();
 
-  drawHeader(doc, logoDataUrl, "STATEMENT", [
-    { label: "Generated", value: new Date().toLocaleDateString("en-IN") },
-    { label: "Account", value: opts.customer.name },
-  ]);
+  const openingBalance = Number(opts.openingBalance ?? 0);
+  const totalDebit = opts.rows
+    .filter((r) => r.reference !== "OPEN")
+    .reduce((a, r) => a + Number(r.debit || 0), 0);
+  const totalCredit = opts.rows
+    .filter((r) => r.reference !== "OPEN")
+    .reduce((a, r) => a + Number(r.credit || 0), 0);
 
-  // Customer block
-  doc.setTextColor(...MUTED);
+  const generatedOn = new Date().toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const period =
+    opts.periodStart && opts.periodEnd
+      ? `${opts.periodStart} – ${opts.periodEnd}`
+      : opts.rows.length
+        ? `${opts.rows[0].date} – ${opts.rows[opts.rows.length - 1].date}`
+        : "—";
+
+  // ── Compact bank-style header ──
+  const M = 40; // margin
+  // Top brand strip
+  doc.setFillColor(...NAVY);
+  doc.rect(0, 0, pageW, 78, "F");
+  doc.setFillColor(...GOLD);
+  doc.rect(0, 78, pageW, 3, "F");
+
+  drawLogo(doc, logoDataUrl, M, 16, 46);
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("ROYAL BROILER", M + 58, 36);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(220, 226, 240);
+  doc.text("Poultry Business Management", M + 58, 50);
+  doc.text("Live Chicken Sales  •  Wholesale & Retail", M + 58, 62);
+
+  // Right-aligned document title
+  doc.setTextColor(...GOLD);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("CUSTOMER ACCOUNT STATEMENT", pageW - M, 34, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(220, 226, 240);
+  doc.text(`Statement Period: ${period}`, pageW - M, 50, { align: "right" });
+  doc.text(`Generated On: ${generatedOn}`, pageW - M, 62, { align: "right" });
+
+  // ── Account holder + summary side-by-side ──
+  const infoTop = 100;
+  const colW = (pageW - M * 2 - 16) / 2;
+
+  // Left: account holder
+  doc.setDrawColor(220, 224, 232);
+  doc.setLineWidth(0.6);
+  doc.rect(M, infoTop, colW, 110, "S");
+  doc.setFillColor(...NAVY);
+  doc.rect(M, infoTop, colW, 20, "F");
+  doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.text("ACCOUNT HOLDER", 40, 145);
-  doc.setTextColor(...INK);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text(opts.customer.name, 40, 165);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(...MUTED);
-  if (opts.customer.phone) doc.text(opts.customer.phone, 40, 180);
+  doc.text("ACCOUNT HOLDER", M + 10, infoTop + 13);
 
+  const holderRow = (label: string, value: string, y: number) => {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...MUTED);
+    doc.text(label, M + 10, y);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...INK);
+    doc.text(value || "—", M + colW - 10, y, { align: "right" });
+  };
+  holderRow("Customer Name", opts.customer.name, infoTop + 38);
+  holderRow("Mobile Number", opts.customer.phone || "—", infoTop + 55);
+  holderRow(
+    "Customer ID",
+    opts.customer.id ? String(opts.customer.id).slice(0, 8).toUpperCase() : "—",
+    infoTop + 72,
+  );
+  holderRow(
+    "Account Status",
+    (opts.customer.status || "Active").replace(/^./, (c) => c.toUpperCase()),
+    infoTop + 89,
+  );
+
+  // Right: account summary
+  const sumX = M + colW + 16;
+  doc.setDrawColor(220, 224, 232);
+  doc.rect(sumX, infoTop, colW, 110, "S");
+  doc.setFillColor(...NAVY);
+  doc.rect(sumX, infoTop, colW, 20, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("ACCOUNT SUMMARY", sumX + 10, infoTop + 13);
+
+  const sumRow = (label: string, value: string, y: number, bold = false) => {
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(...(bold ? INK : MUTED));
+    doc.text(label, sumX + 10, y);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...INK);
+    doc.text(value, sumX + colW - 10, y, { align: "right" });
+  };
+  sumRow("Opening Balance", rs(openingBalance), infoTop + 38);
+  sumRow("Total Debits (Purchases)", rs(totalDebit), infoTop + 55);
+  sumRow("Total Credits (Payments)", rs(totalCredit), infoTop + 72);
+  // Separator + prominent closing
+  doc.setDrawColor(230);
+  doc.line(sumX + 10, infoTop + 80, sumX + colW - 10, infoTop + 80);
+  doc.setFillColor(...NAVY);
+  doc.rect(sumX + 1, infoTop + 84, colW - 2, 25, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(255, 255, 255);
+  doc.text("Closing Outstanding Balance", sumX + 10, infoTop + 101);
+  doc.setTextColor(...GOLD);
+  doc.setFontSize(11);
+  doc.text(rs(opts.currentBalance), sumX + colW - 10, infoTop + 101, { align: "right" });
+
+  // ── Transaction table ──
   autoTable(doc, {
-    startY: 200,
-    margin: { left: 40, right: 40 },
-    head: [["Date", "Description", "Debit", "Credit", "Balance"]],
+    startY: infoTop + 130,
+    margin: { left: M, right: M, top: 90, bottom: 70 },
+    head: [["Date", "Description", "Reference", "Debit", "Credit", "Balance"]],
     body: opts.rows.map((r) => [
       r.date,
       r.description,
+      r.reference,
       r.debit ? rs(r.debit) : "—",
       r.credit ? rs(r.credit) : "—",
       rs(r.balance),
     ]),
-    theme: "grid",
+    theme: "plain",
+    styles: {
+      font: "helvetica",
+      fontSize: 9,
+      cellPadding: { top: 7, right: 8, bottom: 7, left: 8 },
+      lineColor: [220, 224, 232],
+      lineWidth: 0.4,
+      textColor: INK,
+    },
     headStyles: {
       fillColor: NAVY,
       textColor: 255,
       fontStyle: "bold",
-      fontSize: 10.5,
-      cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
+      fontSize: 8.5,
+      halign: "left",
+      cellPadding: { top: 8, right: 8, bottom: 8, left: 8 },
       lineColor: NAVY,
+      lineWidth: 0,
     },
     bodyStyles: {
-      fontSize: 10,
-      cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
-      lineColor: [225, 228, 235],
-      textColor: INK,
+      lineColor: [230, 233, 240],
+      lineWidth: { top: 0, right: 0, bottom: 0.4, left: 0 } as unknown as number,
     },
-    alternateRowStyles: { fillColor: [250, 251, 254] },
+    alternateRowStyles: { fillColor: [249, 250, 253] },
     columnStyles: {
-      0: { cellWidth: 80 },
+      0: { cellWidth: 68 },
       1: { cellWidth: "auto" },
-      2: { halign: "right", cellWidth: 80 },
-      3: { halign: "right", cellWidth: 80 },
-      4: { halign: "right", cellWidth: 90, fontStyle: "bold" },
+      2: { cellWidth: 70, font: "courier", fontSize: 8.5, textColor: MUTED },
+      3: { halign: "right", cellWidth: 72, textColor: [160, 30, 40] },
+      4: { halign: "right", cellWidth: 72, textColor: [20, 110, 60] },
+      5: { halign: "right", cellWidth: 78, fontStyle: "bold" },
+    },
+    didParseCell: (data) => {
+      if (data.section === "body" && data.column.index === 3 && data.cell.raw === "—") {
+        data.cell.styles.textColor = MUTED as unknown as [number, number, number];
+      }
+      if (data.section === "body" && data.column.index === 4 && data.cell.raw === "—") {
+        data.cell.styles.textColor = MUTED as unknown as [number, number, number];
+      }
     },
   });
 
-  const y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 24;
-  const boxW = 280;
-  const boxX = pageW - 40 - boxW;
+  // ── Closing balance strip ──
+  const y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
+  const boxW = 260;
+  const boxX = pageW - M - boxW;
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.8);
   doc.setFillColor(...NAVY);
-  doc.roundedRect(boxX, y, boxW, 44, 6, 6, "F");
+  doc.rect(boxX, y, boxW, 52, "F");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
+  doc.setFontSize(9);
   doc.setTextColor(255, 255, 255);
-  doc.text("OUTSTANDING BALANCE", boxX + 16, y + 19);
+  doc.text("CLOSING ACCOUNT BALANCE", boxX + 14, y + 18);
   doc.setTextColor(...GOLD);
-  doc.setFontSize(15);
-  doc.text(rs(opts.currentBalance), boxX + boxW - 16, y + 30, { align: "right" });
+  doc.setFontSize(18);
+  doc.text(rs(opts.currentBalance), boxX + boxW - 14, y + 38, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(220, 226, 240);
+  doc.text("Amount Outstanding", boxX + 14, y + 44);
 
-  drawFooter(doc);
+  // ── Bank-style footer on every page ──
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(...GOLD);
+    doc.setLineWidth(0.6);
+    doc.line(M, pageH - 54, pageW - M, pageH - 54);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text(
+      "This is a computer-generated statement. No signature is required.",
+      M,
+      pageH - 40,
+    );
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...NAVY);
+    doc.text("ROYAL BROILER", M, pageH - 26);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...MUTED);
+    doc.text("Every Bird Counted. Every Rupee Tracked.", M + 90, pageH - 26);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Page ${i} of ${total}`, pageW - M, pageH - 26, { align: "right" });
+  }
   return doc;
 }

@@ -120,9 +120,10 @@ export function CustomerDetailPage({ id }: { id: string }) {
 
   const downloadStatement = async () => {
     const pdf = await generateStatementPDF({
-      customer: { name: c.name, phone: c.phone, address: c.address },
+      customer: { name: c.name, phone: c.phone, address: c.address, id: c.id, status: c.status },
       rows,
       currentBalance: Number(c.current_balance),
+      openingBalance: Number(c.opening_balance ?? 0),
     });
     pdf.save(`statement-${c.name.replace(/\s+/g, "_")}.pdf`);
   };
