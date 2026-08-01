@@ -277,14 +277,6 @@ export async function generateStatementPDF(opts: {
   const pageH = doc.internal.pageSize.getHeight();
   const logoDataUrl = await loadLogoDataUrl();
 
-  const openingBalance = Number(opts.openingBalance ?? 0);
-  const totalDebit = opts.rows
-    .filter((r) => r.reference !== "OPEN")
-    .reduce((a, r) => a + Number(r.debit || 0), 0);
-  const totalCredit = opts.rows
-    .filter((r) => r.reference !== "OPEN")
-    .reduce((a, r) => a + Number(r.credit || 0), 0);
-
   const generatedOn = new Date().toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -294,10 +286,11 @@ export async function generateStatementPDF(opts: {
   });
   const period =
     opts.periodStart && opts.periodEnd
-      ? `${opts.periodStart} – ${opts.periodEnd}`
+      ? `${opts.periodStart} - ${opts.periodEnd}`
       : opts.rows.length
-        ? `${opts.rows[0].date} – ${opts.rows[opts.rows.length - 1].date}`
-        : "—";
+        ? `${opts.rows[0].date} - ${opts.rows[opts.rows.length - 1].date}`
+        : "-";
+
 
   // ── Compact bank-style header ──
   const M = 40; // margin
