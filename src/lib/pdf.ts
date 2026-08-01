@@ -12,7 +12,17 @@ const INK: [number, number, number] = [20, 20, 30];
 const MUTED: [number, number, number] = [110, 116, 130];
 const SOFT: [number, number, number] = [245, 247, 252];
 
-const rs = (n: number) => `Rs. ${Number(n).toFixed(2)}`;
+const rs = (n: number) =>
+  `Rs. ${Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/** jsPDF core fonts have no glyphs for ₹ / em-dash — normalise to safe ASCII. */
+const sanitize = (s: string) =>
+  String(s ?? "")
+    .replace(/₹\s?/g, "Rs. ")
+    .replace(/[—–]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+
 
 // Cached logo dataURL — loaded once per session.
 let logoDataPromise: Promise<string | null> | null = null;
