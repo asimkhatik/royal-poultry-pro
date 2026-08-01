@@ -320,14 +320,13 @@ export async function generateStatementPDF(opts: {
   doc.text(`Statement Period: ${period}`, pageW - M, 50, { align: "right" });
   doc.text(`Generated On: ${generatedOn}`, pageW - M, 62, { align: "right" });
 
-  // ── Account holder + summary side-by-side ──
+  // ── Account holder ──
   const infoTop = 100;
   const colW = (pageW - M * 2 - 16) / 2;
 
-  // Left: account holder
   doc.setDrawColor(220, 224, 232);
   doc.setLineWidth(0.6);
-  doc.rect(M, infoTop, colW, 110, "S");
+  doc.rect(M, infoTop, colW, 62, "S");
   doc.setFillColor(...NAVY);
   doc.rect(M, infoTop, colW, 20, "F");
   doc.setTextColor(255, 255, 255);
@@ -342,68 +341,30 @@ export async function generateStatementPDF(opts: {
     doc.text(label, M + 10, y);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...INK);
-    doc.text(value || "—", M + colW - 10, y, { align: "right" });
+    doc.text(value || "-", M + colW - 10, y, { align: "right" });
   };
-  holderRow("Customer Name", opts.customer.name, infoTop + 38);
-  holderRow("Mobile Number", opts.customer.phone || "—", infoTop + 55);
-  holderRow(
-    "Customer ID",
-    opts.customer.id ? String(opts.customer.id).slice(0, 8).toUpperCase() : "—",
-    infoTop + 72,
-  );
-  holderRow(
-    "Account Status",
-    (opts.customer.status || "Active").replace(/^./, (c) => c.toUpperCase()),
-    infoTop + 89,
-  );
-
-  // Right: account summary
-  const sumX = M + colW + 16;
-  doc.setDrawColor(220, 224, 232);
-  doc.rect(sumX, infoTop, colW, 110, "S");
-  doc.setFillColor(...NAVY);
-  doc.rect(sumX, infoTop, colW, 20, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.text("ACCOUNT SUMMARY", sumX + 10, infoTop + 13);
-
-  const sumRow = (label: string, value: string, y: number, bold = false) => {
-    doc.setFont("helvetica", bold ? "bold" : "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...(bold ? INK : MUTED));
-    doc.text(label, sumX + 10, y);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...INK);
-    doc.text(value, sumX + colW - 10, y, { align: "right" });
-  };
-  sumRow("Opening Balance", rs(openingBalance), infoTop + 38);
-  sumRow("Total Debits (Purchases)", rs(totalDebit), infoTop + 55);
-  sumRow("Total Credits (Payments)", rs(totalCredit), infoTop + 72);
-  // Separator + prominent closing
-  doc.setDrawColor(230);
-  doc.line(sumX + 10, infoTop + 80, sumX + colW - 10, infoTop + 80);
-  doc.setFillColor(...NAVY);
-  doc.rect(sumX + 1, infoTop + 84, colW - 2, 25, "F");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
-  doc.text("Closing Outstanding Balance", sumX + 10, infoTop + 101);
-  doc.setTextColor(...GOLD);
-  doc.setFontSize(11);
-  doc.text(rs(opts.currentBalance), sumX + colW - 10, infoTop + 101, { align: "right" });
+  holderRow("Customer Name", sanitize(opts.customer.name), infoTop + 36);
+  holderRow("Mobile Number", opts.customer.phone || "-", infoTop + 53);
 
   // ── Transaction table ──
+  const tableW = pageW - M * 2;
+  const wDate = 66;
+  const wRef = 64;
+  const wMoney = 72;
+  const wBal = 78;
+  const wDesc = tableW - wDate - wRef - wMoney * 2 - wBal;
+
   autoTable(doc, {
-    startY: infoTop + 130,
+    startY: infoTop + 86,
     margin: { left: M, right: M, top: 90, bottom: 70 },
+    tableWidth: tableW,
     head: [["Date", "Description", "Reference", "Debit", "Credit", "Balance"]],
     body: opts.rows.map((r) => [
       r.date,
-      r.description,
+      sanitize(r.description),
       r.reference,
-      r.debit ? rs(r.debit) : "—",
-      r.credit ? rs(r.credit) : "—",
+      r.debit ? rs(r.debit) : "-",
+      r.credit ? rs(r.credit) : "-",
       rs(r.balance),
     ]),
     theme: "plain",
@@ -414,6 +375,8 @@ export async function generateStatementPDF(opts: {
       lineColor: [220, 224, 232],
       lineWidth: 0.4,
       textColor: INK,
+      overflow: "linebreak",
+      valign: "middle",
     },
     headStyles: {
       fillColor: NAVY,
@@ -431,22 +394,20 @@ export async function generateStatementPDF(opts: {
     },
     alternateRowStyles: { fillColor: [249, 250, 253] },
     columnStyles: {
-      0: { cellWidth: 68 },
-      1: { cellWidth: "auto" },
-      2: { cellWidth: 70, font: "courier", fontSize: 8.5, textColor: MUTED },
-      3: { halign: "right", cellWidth: 72, textColor: [160, 30, 40] },
-      4: { halign: "right", cellWidth: 72, textColor: [20, 110, 60] },
-      5: { halign: "right", cellWidth: 78, fontStyle: "bold" },
+      0: { cellWidth: wDate },
+      1: { cellWidth: wDesc },
+      2: { cellWidth: wRef, font: "courier", fontSize: 8, textColor: MUTED },
+      3: { halign: "right", cellWidth: wMoney, textColor: [160, 30, 40] },
+      4: { halign: "right", cellWidth: wMoney, textColor: [20, 110, 60] },
+      5: { halign: "right", cellWidth: wBal, fontStyle: "bold" },
     },
     didParseCell: (data) => {
-      if (data.section === "body" && data.column.index === 3 && data.cell.raw === "—") {
-        data.cell.styles.textColor = MUTED as unknown as [number, number, number];
-      }
-      if (data.section === "body" && data.column.index === 4 && data.cell.raw === "—") {
+      if (data.section === "body" && (data.column.index === 3 || data.column.index === 4) && data.cell.raw === "-") {
         data.cell.styles.textColor = MUTED as unknown as [number, number, number];
       }
     },
   });
+
 
   // ── Closing balance strip ──
   const y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
