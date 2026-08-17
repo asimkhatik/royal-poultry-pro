@@ -103,11 +103,22 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      const { access_token, refresh_token } = await signInFn({
-        data: { identifier: signInId, password: signInPwd },
-      });
-      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-      if (error) throw error;
+      const identifier = signInId.trim();
+
+      if (identifier.includes("@")) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: identifier,
+          password: signInPwd,
+        });
+        if (error) throw error;
+      } else {
+        const { access_token, refresh_token } = await signInFn({
+          data: { identifier, password: signInPwd },
+        });
+        const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+        if (error) throw error;
+      }
+
       toast.success("Welcome back!");
       await finishSignIn();
     } catch {
@@ -235,8 +246,8 @@ function AuthPage() {
                   <form onSubmit={onSignIn} className="space-y-4 mt-6">
                     <GlassField id="si-id" label="Email or mobile number" icon={AtSign} type="text" required value={signInId} onChange={setSignInId} placeholder="you@example.com or 9xxxxxxxxx" autoComplete="username" />
                     <GlassField id="si-pwd" label="Password" icon={Lock} type="password" required value={signInPwd} onChange={setSignInPwd} placeholder="••••••••" autoComplete="current-password" />
-                    <Button type="submit" disabled={busy} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
-                      {busy ? "Signing in..." : "Sign in"}
+                    <Button type="submit" disabled={busy || loading} className="w-full h-11 gold-gradient text-gold-foreground hover:opacity-95 shadow-gold font-semibold">
+                      {loading ? "Loading..." : busy ? "Signing in..." : "Sign in"}
                     </Button>
                     <button type="button" onClick={() => setShowReset(true)} className="block w-full text-center text-sm text-primary-foreground/60 hover:text-gold transition-colors">
                       Forgot password?
