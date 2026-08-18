@@ -104,21 +104,11 @@ function AuthPage() {
     setBusy(true);
     try {
       const identifier = signInId.trim();
-
-      if (identifier.includes("@")) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: identifier,
-          password: signInPwd,
-        });
-        if (error) throw error;
-      } else {
-        const { access_token, refresh_token } = await signInFn({
-          data: { identifier, password: signInPwd },
-        });
-        const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-        if (error) throw error;
-      }
-
+      const { access_token, refresh_token } = await signInFn({
+        data: { identifier, password: signInPwd },
+      });
+      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+      if (error) throw error;
       toast.success("Welcome back!");
       await finishSignIn();
     } catch {
