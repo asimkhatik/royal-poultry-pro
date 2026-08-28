@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { loading, session, role } = useAuth();
 
-  if (loading) {
+  if (loading || (session && !role)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[oklch(0.18_0.05_155)] text-primary-foreground px-6">
         <div className="flex flex-col items-center gap-6 text-center animate-in fade-in duration-500">
