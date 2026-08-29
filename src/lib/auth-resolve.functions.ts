@@ -56,9 +56,13 @@ export const signInWithIdentifier = createServerFn({ method: "POST" })
     // Verify the password server-side with a publishable-key client (RLS applies,
     // no session persistence). Only on success do we return session tokens.
     const { createClient } = await import("@supabase/supabase-js");
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !publishableKey) throw new Error(GENERIC);
+
     const authClient = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      supabaseUrl,
+      publishableKey,
       { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
     );
 
