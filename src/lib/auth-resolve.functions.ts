@@ -73,8 +73,5 @@ export const signInWithIdentifier = createServerFn({ method: "POST" })
 
     if (signInError || !signInData.session) throw new Error(GENERIC);
 
-    return {
-      access_token: signInData.session.access_token,
-      refresh_token: signInData.session.refresh_token,
-    };
+    return { session: signInData.session };
   });
