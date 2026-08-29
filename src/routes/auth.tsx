@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { signInWithIdentifier } from "@/lib/auth-resolve.functions";
+import { brokeredPreviewStorage } from "@/integrations/supabase/previewAuthStorage";
 import {
   biometricAvailable,
   enableBiometric,
@@ -104,15 +105,36 @@ function AuthPage() {
     setBusy(true);
     try {
       const identifier = signInId.trim();
-      const { access_token, refresh_token } = await signInFn({
+      const { session: verifiedSession } = await signInFn({
         data: { identifier, password: signInPwd },
       });
-      const { error } = await supabase.auth.setSession({ access_token, refresh_token });
-      if (error) throw error;
+      try {
+        const { error } = await supabase.auth.setSession({
+          access_token: verifiedSession.access_token,
+          refresh_token: verifiedSession.refresh_token,
+        });
+        if (error) throw error;
+      } catch (error) {
+        // Safari can block setSession's redundant cross-origin /user check even
+        // though the server has already verified these credentials. Persist the
+        // verified session and reload so the auth client hydrates it normally.
+        if (!(error instanceof TypeError) || error.message !== "Load failed") throw error;
+        const backendUrl = import.meta.env.VITE_SUPABASE_URL;
+        if (!backendUrl) throw error;
+        const projectRef = new URL(backendUrl).hostname.split(".")[0];
+        if (!projectRef) throw error;
+        const storage = brokeredPreviewStorage();
+        if (!storage) throw error;
+        await storage.setItem(`sb-${projectRef}-auth-token`, JSON.stringify(verifiedSession));
+        toast.success("Welcome back!");
+        window.location.assign("/");
+        return;
+      }
       toast.success("Welcome back!");
       await finishSignIn();
-    } catch {
-      toast.error("Invalid credentials");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to sign in";
+      toast.error(message === "Invalid credentials" ? message : "Unable to complete sign in. Please try again.");
     } finally {
       setBusy(false);
     }
